@@ -22,35 +22,101 @@ async function fetchData() {
         // Use the correct channel ID directly
         const channelId = 'UCg2t_zRgiKpVerhYTXQj3GQ';
         
-        // Fetch the RSS feed using the channel ID
-        const rssResponse = await fetch(`https://www.youtube.com/feeds/videos.xml?channel_id=${channelId}`);
-        const rssText = await rssResponse.text();
+        console.log('Fetching YouTube RSS feed for channel:', channelId);
         
-        // Parse the RSS feed to get the latest video
+        // Fetch the RSS feed using the channel ID
+        const rssResponse = await fetch(`https://www.youtube.com/feeds/videos.xml?channel_id=${channelId}`, {
+            headers: {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+            }
+        });
+        
+        if (!rssResponse.ok) {
+            throw new Error(`RSS feed request failed: ${rssResponse.status}`);
+        }
+        
+        const rssText = await rssResponse.text();
+        console.log('RSS feed fetched, length:', rssText.length);
+        
+        // Parse the RSS feed to get the latest video - try multiple approaches
+        let entryContent = '';
+        
+        // Try to find the first entry
         const entryMatch = rssText.match(/<entry>([\s\S]*?)<\/entry>/);
-        if (!entryMatch) {
+        if (entryMatch) {
+            entryContent = entryMatch[1];
+        } else {
+            // Try alternative parsing
+            const entries = rssText.split('<entry>');
+            if (entries.length > 1) {
+                entryContent = entries[1].split('</entry>')[0];
+            }
+        }
+        
+        if (!entryContent) {
+            console.error('No entry content found in RSS feed');
             throw new Error('No videos found in RSS feed');
         }
         
-        const entryContent = entryMatch[1];
+        console.log('Entry content found, length:', entryContent.length);
         
-        // Extract video information
-        const titleMatch = entryContent.match(/<title><!\[CDATA\[(.*?)\]\]><\/title>|<title>(.*?)<\/title>/);
-        const title = titleMatch ? (titleMatch[1] || titleMatch[2] || '').trim() : 'Latest Video';
+        // Extract video information with better regex patterns
+        let title = 'Latest Video';
+        let videoUrl = 'https://www.youtube.com/@PurpleHallos';
+        let videoId = '';
+        let publishedAt = new Date().toISOString();
         
-        const linkMatch = entryContent.match(/<link href="(.*?)"/);
-        const videoUrl = linkMatch ? linkMatch[1].trim() : 'https://www.youtube.com/@PurpleHallos';
+        // Extract title - try multiple patterns
+        const titlePatterns = [
+            /<title><!\[CDATA\[(.*?)\]\]><\/title>/,
+            /<title>(.*?)<\/title>/,
+            /<yt:videoId>(.*?)<\/yt:videoId>/
+        ];
         
-        const videoIdMatch = videoUrl.match(/watch\?v=([^&]+)/);
-        const videoId = videoIdMatch ? videoIdMatch[1] : '';
+        for (const pattern of titlePatterns) {
+            const match = entryContent.match(pattern);
+            if (match) {
+                if (pattern.source.includes('videoId')) {
+                    videoId = match[1].trim();
+                    title = `Video ${videoId}`;
+                } else {
+                    title = match[1].trim();
+                }
+                break;
+            }
+        }
         
+        // Extract video URL
+        const linkMatch = entryContent.match(/<link[^>]*href="([^"]*)"/);
+        if (linkMatch) {
+            videoUrl = linkMatch[1].trim();
+            // Extract video ID from URL
+            const idMatch = videoUrl.match(/watch\?v=([^&]+)/);
+            if (idMatch) {
+                videoId = idMatch[1];
+            }
+        }
+        
+        // Extract video ID directly if not found in URL
+        if (!videoId) {
+            const videoIdMatch = entryContent.match(/<yt:videoId>(.*?)<\/yt:videoId>/);
+            if (videoIdMatch) {
+                videoId = videoIdMatch[1].trim();
+                videoUrl = `https://www.youtube.com/watch?v=${videoId}`;
+            }
+        }
+        
+        // Get thumbnail
         const thumbnail = videoId ? `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg` : '';
         
+        // Extract published date
         const publishedMatch = entryContent.match(/<published>(.*?)<\/published>/);
-        const publishedAt = publishedMatch ? publishedMatch[1].trim() : new Date().toISOString();
+        if (publishedMatch) {
+            publishedAt = publishedMatch[1].trim();
+        }
         
         // Format date
-        let formattedDate = '';
+        let formattedDate = 'Recent';
         if (publishedAt) {
             try {
                 const date = new Date(publishedAt);
@@ -60,9 +126,12 @@ async function fetchData() {
                     day: 'numeric' 
                 });
             } catch (e) {
+                console.error('Error formatting date:', e);
                 formattedDate = 'Recent';
             }
         }
+        
+        console.log('Extracted data:', { title, videoUrl, videoId, thumbnail, publishedAt: formattedDate });
         
         return {
             title: title,

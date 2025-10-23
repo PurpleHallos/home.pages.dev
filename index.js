@@ -147,6 +147,7 @@ fetch('/fetchblog').then(r => r.json()).then(articles => {
 
 // YouTube widget functionality
 fetch('/fetchyoutube').then(r => r.json()).then(video => {
+    console.log('YouTube data received:', video);
     const youtubeWidget = document.querySelector('.youtube');
     
     if (video && youtubeWidget) {
