@@ -19,19 +19,10 @@ export async function onRequestGet({ request, waitUntil }) {
 
 async function fetchData() {
     try {
-        // Try to get your YouTube channel ID from the channel page
-        const channelResponse = await fetch('https://www.youtube.com/@PurpleHallos');
-        const channelHtml = await channelResponse.text();
+        // Use the correct channel ID directly
+        const channelId = 'UCg2t_zRgiKpVerhYTXQj3GQ';
         
-        // Extract channel ID from the page
-        const channelIdMatch = channelHtml.match(/"channelId":"([^"]+)"/);
-        const channelId = channelIdMatch ? channelIdMatch[1] : null;
-        
-        if (!channelId) {
-            throw new Error('Could not find channel ID');
-        }
-        
-        // Now fetch the RSS feed using the channel ID
+        // Fetch the RSS feed using the channel ID
         const rssResponse = await fetch(`https://www.youtube.com/feeds/videos.xml?channel_id=${channelId}`);
         const rssText = await rssResponse.text();
         
@@ -75,7 +66,7 @@ async function fetchData() {
         
         return {
             title: title,
-            description: "Latest video from PurpleHallos",
+            description: "Latest video from Hallos | هالوس",
             thumbnail: thumbnail,
             videoUrl: videoUrl,
             publishedAt: formattedDate
@@ -85,7 +76,7 @@ async function fetchData() {
         console.error('Error fetching YouTube data:', error);
         // Return fallback data if fetch fails
         return {
-            title: "Welcome to PurpleHallos",
+            title: "Welcome to Hallos | هالوس",
             description: "Check out my latest content on YouTube!",
             thumbnail: "",
             videoUrl: "https://www.youtube.com/@PurpleHallos",
