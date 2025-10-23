@@ -215,7 +215,7 @@ fetch('/fetchlanyard').then(r => r.json()).then(updateLanyard);
 !function lanyard() {
     const ws = new WebSocket('wss://api.lanyard.rest/socket');
 
-    ws.addEventListener('open', () => ws.send(JSON.stringify({ op: 2, d: { subscribe_to_id: '393694671383166998' } })));
+    ws.addEventListener('open', () => ws.send(JSON.stringify({ op: 2, d: { subscribe_to_id: '1154452833282818078' } })));
     ws.addEventListener('error', () => ws.close());
     ws.addEventListener('close', () => setTimeout(lanyard, 1000));
     ws.addEventListener('message', async ({ data }) => {
