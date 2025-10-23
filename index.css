@@ -628,6 +628,42 @@ aside {
     height: .6em;
 }
 
+/* Blog articles spacing and RTL support */
+#blog-articles .project {
+    margin-bottom: 15px;
+}
+
+#blog-articles .project:last-child {
+    margin-bottom: 0;
+}
+
+/* RTL support for blog articles */
+#blog-articles .project .bold {
+    direction: rtl;
+    text-align: right;
+    unicode-bidi: plaintext;
+}
+
+#blog-articles .project .opaque {
+    direction: rtl;
+    text-align: right;
+    unicode-bidi: plaintext;
+    line-height: 1.5;
+}
+
+/* Blog date styling */
+.blog-date {
+    font-size: 0.9em;
+    color: #666;
+    direction: ltr;
+    text-align: left;
+}
+
+/* Blog icon styling */
+.blog-icon {
+    font-size: 1.2em;
+}
+
 footer {
     display: flex;
     justify-content: center;

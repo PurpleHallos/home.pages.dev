@@ -19,18 +19,15 @@ export async function onRequestGet({ env, request, waitUntil }) {
 
 async function fetchData(env) {
     const query = `{
-        a: repository(owner: "AutumnVN", name: "chino.pages.dev") { stargazers { totalCount } forks { totalCount } }
-        b: repository(owner: "AutumnVN", name: "autumn") { stargazers { totalCount } forks { totalCount } }
-        c: repository(owner: "AutumnVN", name: "highlight") { stargazers { totalCount } forks { totalCount } }
-        d: repository(owner: "AutumnVN", name: "userscript") { stargazers { totalCount } forks { totalCount } }
-        e: repository(owner: "AutumnVN", name: "AutoWhipStacking") { stargazers { totalCount } forks { totalCount } }
-        f: repository(owner: "AutumnVN", name: "FasterOldOnesArmy") { stargazers { totalCount } forks { totalCount } }
-        g: repository(owner: "AutumnVN", name: "osu-igdl") { stargazers { totalCount } forks { totalCount } }
-        h: repository(owner: "AutumnVN", name: "osu-mpbd") { stargazers { totalCount } forks { totalCount } }
-        i: repository(owner: "AutumnVN", name: "osu-ubu") { stargazers { totalCount } forks { totalCount } }
-        j: repository(owner: "AutumnVN", name: "bot") { stargazers { totalCount } forks { totalCount } }
+        a: repository(owner: "PurpleHallos", name: "home.pages.dev") { stargazers { totalCount } forks { totalCount } }
+        b: repository(owner: "PurpleHallos", name: "autumn") { stargazers { totalCount } forks { totalCount } }
+        c: repository(owner: "PurpleHallos", name: "highlight") { stargazers { totalCount } forks { totalCount } }
+        d: repository(owner: "PurpleHallos", name: "userscript") { stargazers { totalCount } forks { totalCount } }
+        e: repository(owner: "PurpleHallos", name: "AutoWhipStacking") { stargazers { totalCount } forks { totalCount } }
+        f: repository(owner: "PurpleHallos", name: "FasterOldOnesArmy") { stargazers { totalCount } forks { totalCount } }
+        j: repository(owner: "PurpleHallos", name: "bot") { stargazers { totalCount } forks { totalCount } }
 
-        z: user(login: "AutumnVN") {
+        z: user(login: "PurpleHallos") {
             repositories(first: 100, ownerAffiliations: OWNER) {
                 nodes {
                     stargazerCount
@@ -57,7 +54,7 @@ async function fetchData(env) {
         headers: {
             'accept': 'application/json',
             'authorization': `bearer ${env.GITHUB_TOKEN}`,
-            'user-agent': 'AutumnVN'
+            'user-agent': 'PurpleHallos'
         },
         body: JSON.stringify({ query })
     }).then(r => r.json());

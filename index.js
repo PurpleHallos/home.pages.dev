@@ -66,11 +66,72 @@ document.querySelectorAll('.overflow').forEach(e => {
     });
 });
 
-fetch('/fetchgithub').then(r => r.json()).then(repos => {
-    const stats = repos.pop();
-    document.querySelectorAll('.stat').forEach((stat, i) => stat.textContent = stats[i]);
-    document.querySelectorAll('.star').forEach((star, i) => star.textContent = repos[i][0]);
-    document.querySelectorAll('.fork').forEach((fork, i) => fork.textContent = repos[i][1]);
+fetch('/fetchblog').then(r => r.json()).then(articles => {
+    const blogContainer = document.getElementById('blog-articles');
+    
+    if (articles && articles.length > 0) {
+        articles.forEach(article => {
+            const articleElement = document.createElement('div');
+            articleElement.className = 'project';
+            articleElement.innerHTML = `
+                <a href="${article.link}" target="_blank" rel="noopener noreferrer">
+                    <div class="bold" dir="rtl">${article.title}</div>
+                    <div class="opaque" dir="rtl">${article.description}</div>
+                    <div class="meta">
+                        <div>
+                            <svg fill="currentColor" viewBox="0 0 16 16" height="1em" width="1em">
+                                <path d="M8 0C3.58 0 0 3.58 0 8s3.58 8 8 8 8-3.58 8-8-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6s2.69-6 6-6 6 2.69 6 6-2.69 6-6 6z"/>
+                                <path d="M8 4c-.55 0-1 .45-1 1v3c0 .55.45 1 1 1s1-.45 1-1V5c0-.55-.45-1-1-1z"/>
+                                <path d="M8 12c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1z"/>
+                            </svg>
+                            <div class="blog-date" dir="ltr">${article.date}</div>
+                        </div>
+                    </div>
+                </a>
+            `;
+            blogContainer.appendChild(articleElement);
+        });
+    } else {
+        blogContainer.innerHTML = `
+            <div class="project">
+                <a href="https://purpleyard.xyz" target="_blank" rel="noopener noreferrer">
+                    <div class="bold" dir="rtl">مرحباً بك في PurpleYard</div>
+                    <div class="opaque" dir="rtl">زر مدونتي لقراءة أحدث المقالات</div>
+                    <div class="meta">
+                        <div>
+                            <svg fill="currentColor" viewBox="0 0 16 16" height="1em" width="1em">
+                                <path d="M8 0C3.58 0 0 3.58 0 8s3.58 8 8 8 8-3.58 8-8-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6s2.69-6 6-6 6 2.69 6 6-2.69 6-6 6z"/>
+                                <path d="M8 4c-.55 0-1 .45-1 1v3c0 .55.45 1 1 1s1-.45 1-1V5c0-.55-.45-1-1-1z"/>
+                                <path d="M8 12c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1z"/>
+                            </svg>
+                            <div class="blog-date" dir="ltr">Recent</div>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        `;
+    }
+}).catch(error => {
+    console.error('Error fetching blog articles:', error);
+    const blogContainer = document.getElementById('blog-articles');
+    blogContainer.innerHTML = `
+        <div class="project">
+            <a href="https://purpleyard.xyz" target="_blank" rel="noopener noreferrer">
+                <div class="bold" dir="rtl">مدونة PurpleYard</div>
+                <div class="opaque" dir="rtl">زر مدونتي لقراءة أحدث المقالات</div>
+                <div class="meta">
+                    <div>
+                        <svg fill="currentColor" viewBox="0 0 16 16" height="1em" width="1em">
+                            <path d="M8 0C3.58 0 0 3.58 0 8s3.58 8 8 8 8-3.58 8-8-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6s2.69-6 6-6 6 2.69 6 6-2.69 6-6 6z"/>
+                            <path d="M8 4c-.55 0-1 .45-1 1v3c0 .55.45 1 1 1s1-.45 1-1V5c0-.55-.45-1-1-1z"/>
+                            <path d="M8 12c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1z"/>
+                        </svg>
+                        <div class="blog-date" dir="ltr">Visit Blog</div>
+                    </div>
+                </div>
+            </a>
+        </div>
+    `;
 });
 
 const TIME_UNIT = [
@@ -268,7 +329,7 @@ const visitTime = new Date().setSeconds(0, 0);
 
 !function setClock() {
     const now = Date.now();
-    const [month, day, year, hour, minute, second] = new Date().toLocaleString('en-US', { timeZone: 'Asia/Ho_Chi_Minh', hour12: false }).match(/\d+/g).map(Number);
+    const [month, day, year, hour, minute, second] = new Date().toLocaleString('en-US', { timeZone: 'Pacific/Gambier', hour12: false }).match(/\d+/g).map(Number);
     const hourOffset = -new Date().getTimezoneOffset() / 60;
     const utcTime = new Date(now - now % 1000 - hourOffset * 60 * 60 * 1000);
     const timezoneOffset = (new Date(year, month - 1, day, hour, minute, second) - utcTime) / 1000 / 60 / 60;
@@ -300,25 +361,6 @@ function formatTimezone(timezoneDiff) {
     return `${timezoneDiff < 0 ? '-' : ''}${hour}h${minute ? ` ${minute}m` : ''}`;
 }
 
-document.querySelector('[href="/skin/Minimal.osk"]').addEventListener('click', e => {
-    e.preventDefault();
-
-    const skins = [
-        'Minimal.osk',
-        'Minimal 3.osk',
-        'Minimal EZ.osk',
-        'Minimal FL.osk',
-        'Minimal Instafade.osk',
-        'Minimal Mapping.osk'
-    ];
-
-    for (const skin of skins) {
-        const a = document.createElement('a');
-        a.href = `/skin/${encodeURIComponent(skin)}`;
-        a.download = skin;
-        a.click();
-    }
-});
 
 let isRecording = false;
 let recoder;
