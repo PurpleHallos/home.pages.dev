@@ -19,64 +19,19 @@ export async function onRequestGet({ request, waitUntil }) {
 
 async function fetchData() {
     try {
-        // YouTube Data API v3 endpoint to get latest video from channel
-        const channelId = 'UC_your_channel_id'; // You'll need to replace this with your actual channel ID
-        const apiKey = 'YOUR_YOUTUBE_API_KEY'; // You'll need to add this as an environment variable
-        
-        // For now, we'll use a simpler approach with RSS feed
-        const response = await fetch('https://www.youtube.com/feeds/videos.xml?channel_id=UC_your_channel_id');
-        const xmlText = await response.text();
-        
-        // Parse XML to get latest video
-        const videoMatch = xmlText.match(/<entry>([\s\S]*?)<\/entry>/);
-        if (!videoMatch) {
-            return {
-                title: "No videos found",
-                description: "Check back later for new content!",
-                thumbnail: "",
-                videoUrl: "https://www.youtube.com/@PurpleHallos",
-                publishedAt: new Date().toISOString()
-            };
-        }
-        
-        const entryContent = videoMatch[1];
-        
-        // Extract video information
-        const titleMatch = entryContent.match(/<title><!\[CDATA\[(.*?)\]\]><\/title>|<title>(.*?)<\/title>/);
-        const title = titleMatch ? (titleMatch[1] || titleMatch[2] || '').trim() : '';
-        
-        const linkMatch = entryContent.match(/<link href="(.*?)"/);
-        const videoUrl = linkMatch ? linkMatch[1].trim() : '';
-        
-        const videoIdMatch = videoUrl.match(/watch\?v=([^&]+)/);
-        const videoId = videoIdMatch ? videoIdMatch[1] : '';
-        
-        const thumbnail = videoId ? `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg` : '';
-        
-        const publishedMatch = entryContent.match(/<published>(.*?)<\/published>/);
-        const publishedAt = publishedMatch ? publishedMatch[1].trim() : new Date().toISOString();
-        
-        // Format date
-        let formattedDate = '';
-        if (publishedAt) {
-            try {
-                const date = new Date(publishedAt);
-                formattedDate = date.toLocaleDateString('en-US', { 
-                    year: 'numeric', 
-                    month: 'short', 
-                    day: 'numeric' 
-                });
-            } catch (e) {
-                formattedDate = '';
-            }
-        }
+        // Return static content for now - you can update this with your actual YouTube channel ID later
+        // To get your YouTube channel ID:
+        // 1. Go to your YouTube channel
+        // 2. View page source (Ctrl+U)
+        // 3. Search for "channelId" or look in the URL
+        // 4. Or use https://commentpicker.com/youtube-channel-id.php
         
         return {
-            title: title,
-            description: "Latest video from PurpleHallos",
-            thumbnail: thumbnail,
-            videoUrl: videoUrl,
-            publishedAt: formattedDate
+            title: "Latest Video from PurpleHallos",
+            description: "Check out my latest content on YouTube!",
+            thumbnail: "https://img.youtube.com/vi/dQw4w9WgXcQ/maxresdefault.jpg", // Placeholder thumbnail
+            videoUrl: "https://www.youtube.com/@PurpleHallos",
+            publishedAt: "Recent"
         };
         
     } catch (error) {
