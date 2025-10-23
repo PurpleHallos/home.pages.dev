@@ -157,7 +157,7 @@ const TIME_UNIT = [
 !async function anilist() {
     const query = `query {
         Page(page: 1, perPage: 4) {
-            activities(userId: 6851565, sort: ID_DESC) {
+            activities(userId: 7357610, sort: ID_DESC) {
                 ... on ListActivity {
                     createdAt
                     status
