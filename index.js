@@ -155,6 +155,7 @@ fetch('/fetchyoutube').then(r => r.json()).then(video => {
         const videoDescription = youtubeWidget.querySelector('.video-description');
         const videoDate = youtubeWidget.querySelector('.video-date');
         const videoThumbnail = youtubeWidget.querySelector('.video-thumbnail img');
+        const videoThumbnailContainer = youtubeWidget.querySelector('.video-thumbnail-container');
         const videoLink = youtubeWidget.querySelector('.content');
         
         if (videoTitle) videoTitle.textContent = video.title;
@@ -165,17 +166,33 @@ fetch('/fetchyoutube').then(r => r.json()).then(video => {
             videoThumbnail.alt = video.title;
         }
         
-        // Make the widget clickable to open the video
-        if (videoLink && video.videoUrl) {
+        // Make the thumbnail clickable to open the video
+        if (videoThumbnailContainer && video.videoUrl) {
+            videoThumbnailContainer.addEventListener('click', () => {
+                window.open(video.videoUrl, '_blank');
+            });
+        }
+        
+        // Make the header clickable to open the channel
+        if (videoLink) {
             videoLink.style.cursor = 'pointer';
             videoLink.addEventListener('click', () => {
+                window.open('https://www.youtube.com/@PurpleHallos', '_blank');
+            });
+        }
+        
+        // Make the video title clickable too
+        if (videoTitle && video.videoUrl) {
+            videoTitle.style.cursor = 'pointer';
+            videoTitle.style.color = '#06b';
+            videoTitle.addEventListener('click', () => {
                 window.open(video.videoUrl, '_blank');
             });
         }
         
         // Update the loading text
         const loadingText = youtubeWidget.querySelector('.opaque');
-        if (loadingText) loadingText.textContent = 'PurpleHallos';
+        if (loadingText) loadingText.textContent = 'Hallos | هالوس';
     }
 }).catch(error => {
     console.error('Error fetching YouTube data:', error);
