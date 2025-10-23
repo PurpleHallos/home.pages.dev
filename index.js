@@ -145,6 +145,63 @@ fetch('/fetchblog').then(r => r.json()).then(articles => {
     `;
 });
 
+// YouTube widget functionality
+fetch('/fetchyoutube').then(r => r.json()).then(video => {
+    const youtubeWidget = document.querySelector('.youtube');
+    
+    if (video && youtubeWidget) {
+        // Update the widget content
+        const videoTitle = youtubeWidget.querySelector('.video-title');
+        const videoDescription = youtubeWidget.querySelector('.video-description');
+        const videoDate = youtubeWidget.querySelector('.video-date');
+        const videoThumbnail = youtubeWidget.querySelector('.video-thumbnail img');
+        const videoLink = youtubeWidget.querySelector('.content');
+        
+        if (videoTitle) videoTitle.textContent = video.title;
+        if (videoDescription) videoDescription.textContent = video.description;
+        if (videoDate) videoDate.textContent = video.publishedAt;
+        if (videoThumbnail && video.thumbnail) {
+            videoThumbnail.src = video.thumbnail;
+            videoThumbnail.alt = video.title;
+        }
+        
+        // Make the widget clickable to open the video
+        if (videoLink && video.videoUrl) {
+            videoLink.style.cursor = 'pointer';
+            videoLink.addEventListener('click', () => {
+                window.open(video.videoUrl, '_blank');
+            });
+        }
+        
+        // Update the loading text
+        const loadingText = youtubeWidget.querySelector('.opaque');
+        if (loadingText) loadingText.textContent = 'PurpleHallos';
+    }
+}).catch(error => {
+    console.error('Error fetching YouTube data:', error);
+    const youtubeWidget = document.querySelector('.youtube');
+    if (youtubeWidget) {
+        const videoTitle = youtubeWidget.querySelector('.video-title');
+        const videoDescription = youtubeWidget.querySelector('.video-description');
+        const videoDate = youtubeWidget.querySelector('.video-date');
+        const loadingText = youtubeWidget.querySelector('.opaque');
+        
+        if (videoTitle) videoTitle.textContent = 'Welcome to PurpleHallos';
+        if (videoDescription) videoDescription.textContent = 'Check out my latest content on YouTube!';
+        if (videoDate) videoDate.textContent = 'Visit Channel';
+        if (loadingText) loadingText.textContent = 'PurpleHallos';
+        
+        // Make it clickable to open YouTube channel
+        const videoLink = youtubeWidget.querySelector('.content');
+        if (videoLink) {
+            videoLink.style.cursor = 'pointer';
+            videoLink.addEventListener('click', () => {
+                window.open('https://www.youtube.com/@PurpleHallos', '_blank');
+            });
+        }
+    }
+});
+
 const TIME_UNIT = [
     ['year', 60 * 60 * 24 * 365],
     ['month', 60 * 60 * 24 * 30],

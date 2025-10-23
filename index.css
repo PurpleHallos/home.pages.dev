@@ -696,6 +696,75 @@ aside {
     font-size: 1.2em;
 }
 
+/* YouTube widget styling */
+.youtube {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    box-sizing: border-box;
+    padding: 24px;
+    width: 100%;
+    height: 100%;
+}
+
+.youtube .content {
+    flex-direction: row;
+    align-items: center;
+}
+
+.youtube .content .icon {
+    flex-shrink: 0;
+}
+
+.youtube .meta {
+    margin-top: 0;
+    margin-left: 14px;
+    width: 100%;
+    min-width: 0;
+}
+
+.youtube .video-info {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    flex: 1;
+}
+
+.youtube .video-thumbnail {
+    border-radius: 8px;
+    overflow: hidden;
+    background: #f0f0f0;
+}
+
+.youtube .video-details {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.youtube .video-title {
+    font-weight: bold;
+    font-size: 0.9em;
+    color: #06b;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.youtube .video-description {
+    font-size: 0.8em;
+    color: #000b;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    line-height: 1.3;
+}
+
+.youtube .video-date {
+    font-size: 0.75em;
+    color: #666;
+}
+
 footer {
     display: flex;
     justify-content: center;
