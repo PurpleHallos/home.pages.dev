@@ -336,8 +336,9 @@ function padZero(n) {
     return n.toString().padStart(2, '0');
 }
 
-const visitTime = new Date().setSeconds(0, 0);
+// const visitTime = new Date().setSeconds(0, 0);
 
+/*
 !function setClock() {
     const now = Date.now();
     const [month, day, year, hour, minute, second] = new Date().toLocaleString('en-US', { timeZone: 'Pacific/Gambier', hour12: false }).match(/\d+/g).map(Number);
@@ -365,6 +366,7 @@ const visitTime = new Date().setSeconds(0, 0);
 
     setTimeout(setClock, 1000 - now % 1000);
 }();
+*/
 
 function formatTimezone(timezoneDiff) {
     const hour = Math.floor(Math.abs(timezoneDiff));
