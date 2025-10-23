@@ -66,6 +66,12 @@ document.querySelectorAll('.overflow').forEach(e => {
     });
 });
 
+// Function to detect if text contains Arabic characters
+function containsArabic(text) {
+    const arabicRegex = /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]/;
+    return arabicRegex.test(text);
+}
+
 fetch('/fetchblog').then(r => r.json()).then(articles => {
     const blogContainer = document.getElementById('blog-articles');
     
@@ -73,10 +79,15 @@ fetch('/fetchblog').then(r => r.json()).then(articles => {
         articles.forEach(article => {
             const articleElement = document.createElement('div');
             articleElement.className = 'project';
+            
+            // Detect if title contains Arabic
+            const titleIsArabic = containsArabic(article.title);
+            const descriptionIsArabic = containsArabic(article.description);
+            
             articleElement.innerHTML = `
                 <a href="${article.link}" target="_blank" rel="noopener noreferrer">
-                    <div class="bold" dir="rtl">${article.title}</div>
-                    <div class="opaque" dir="rtl">${article.description}</div>
+                    <div class="bold" dir="${titleIsArabic ? 'rtl' : 'ltr'}" lang="${titleIsArabic ? 'ar' : 'en'}">${article.title}</div>
+                    <div class="opaque" dir="${descriptionIsArabic ? 'rtl' : 'ltr'}" lang="${descriptionIsArabic ? 'ar' : 'en'}">${article.description}</div>
                     <div class="meta">
                         <div>
                             <svg fill="currentColor" viewBox="0 0 16 16" height="1em" width="1em">
@@ -95,8 +106,8 @@ fetch('/fetchblog').then(r => r.json()).then(articles => {
         blogContainer.innerHTML = `
             <div class="project">
                 <a href="https://purpleyard.xyz" target="_blank" rel="noopener noreferrer">
-                    <div class="bold" dir="rtl">مرحباً بك في PurpleYard</div>
-                    <div class="opaque" dir="rtl">زر مدونتي لقراءة أحدث المقالات</div>
+                    <div class="bold" dir="rtl" lang="ar">مرحباً بك في PurpleYard</div>
+                    <div class="opaque" dir="rtl" lang="ar">زر مدونتي لقراءة أحدث المقالات</div>
                     <div class="meta">
                         <div>
                             <svg fill="currentColor" viewBox="0 0 16 16" height="1em" width="1em">
@@ -117,8 +128,8 @@ fetch('/fetchblog').then(r => r.json()).then(articles => {
     blogContainer.innerHTML = `
         <div class="project">
             <a href="https://purpleyard.xyz" target="_blank" rel="noopener noreferrer">
-                <div class="bold" dir="rtl">مدونة PurpleYard</div>
-                <div class="opaque" dir="rtl">زر مدونتي لقراءة أحدث المقالات</div>
+                <div class="bold" dir="rtl" lang="ar">مدونة PurpleYard</div>
+                <div class="opaque" dir="rtl" lang="ar">زر مدونتي لقراءة أحدث المقالات</div>
                 <div class="meta">
                     <div>
                         <svg fill="currentColor" viewBox="0 0 16 16" height="1em" width="1em">

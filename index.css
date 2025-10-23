@@ -651,6 +651,38 @@ aside {
     line-height: 1.5;
 }
 
+/* Enhanced RTL support for Arabic content */
+#blog-articles .project .bold[lang="ar"],
+#blog-articles .project .opaque[lang="ar"] {
+    direction: rtl;
+    text-align: right;
+    unicode-bidi: plaintext;
+    font-family: 'Segoe UI', Tahoma, Arial, sans-serif;
+}
+
+/* LTR support for English content */
+#blog-articles .project .bold[lang="en"],
+#blog-articles .project .opaque[lang="en"] {
+    direction: ltr;
+    text-align: left;
+    unicode-bidi: plaintext;
+}
+
+/* Mixed content handling */
+#blog-articles .project .bold[dir="rtl"],
+#blog-articles .project .opaque[dir="rtl"] {
+    direction: rtl;
+    text-align: right;
+    unicode-bidi: plaintext;
+}
+
+#blog-articles .project .bold[dir="ltr"],
+#blog-articles .project .opaque[dir="ltr"] {
+    direction: ltr;
+    text-align: left;
+    unicode-bidi: plaintext;
+}
+
 /* Blog date styling */
 .blog-date {
     font-size: 0.9em;
