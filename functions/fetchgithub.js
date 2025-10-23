@@ -1,3 +1,5 @@
+// GitHub status functionality disabled
+/*
 export async function onRequestGet({ env, request, waitUntil }) {
     let res = await caches.default.match(request.url);
 
@@ -16,7 +18,9 @@ export async function onRequestGet({ env, request, waitUntil }) {
         }
     });
 }
+*/
 
+/*
 async function fetchData(env) {
     const query = `{
         a: repository(owner: "PurpleHallos", name: "home.pages.dev") { stargazers { totalCount } forks { totalCount } }
@@ -92,3 +96,4 @@ async function updateCache(url, env, data = null) {
         }
     }));
 }
+*/
