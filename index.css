@@ -461,6 +461,59 @@ main {
     font-size: 0.9em;
 }
 
+.goodreads {
+    display: flex;
+    flex-direction: column !important;
+    gap: 10px;
+    box-sizing: border-box;
+    padding: 24px;
+    width: 100%;
+    height: 100%;
+}
+
+.goodreads .content {
+    flex-direction: row;
+    align-items: center;
+    color: #000;
+}
+
+.goodreads .content .icon {
+    flex-shrink: 0;
+}
+
+.goodreads .meta {
+    margin-top: 0;
+    margin-left: 14px;
+    width: 100%;
+    min-width: 0;
+}
+
+.goodreads .activity-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    height: 100%;
+}
+
+.goodreads .activity {
+    display: flex;
+    flex-direction: row;
+}
+
+.goodreads .image {
+    flex-shrink: 0;
+    border-radius: 4px;
+    background-position: center;
+    background-size: cover;
+    background-repeat: no-repeat;
+    width: 50px;
+    height: 65px;
+}
+
+.goodreads time {
+    font-size: 0.9em;
+}
+
 .clock {
     display: flex;
     flex-direction: row;
@@ -677,54 +730,6 @@ aside {
 }
 
 #blog-articles .project .bold[dir="ltr"],
-
-/* Article indicator styling */
-.article-indicator {
-    width: 8px;
-    height: 8px;
-    background-color: #8b5cf6;
-    border-radius: 50%;
-    margin-bottom: 8px;
-    margin-right: 8px;
-    flex-shrink: 0;
-    display: inline-block;
-}
-
-/* RTL support for article indicators */
-.project .bold[lang="ar"] .article-indicator,
-.project .opaque[lang="ar"] .article-indicator {
-    margin-right: 0;
-    margin-left: 8px;
-}
-
-.project .bold[dir="rtl"] .article-indicator,
-.project .opaque[dir="rtl"] .article-indicator {
-    margin-right: 0;
-    margin-left: 8px;
-}
-
-/* Blog project styling improvements */
-.project .bold {
-    display: flex;
-    align-items: flex-start;
-    gap: 8px;
-}
-
-.project .bold[lang="ar"],
-.project .bold[dir="rtl"] {
-    flex-direction: row-reverse;
-}
-
-.project .opaque {
-    display: flex;
-    align-items: flex-start;
-    gap: 8px;
-}
-
-.project .opaque[lang="ar"],
-.project .opaque[dir="rtl"] {
-    flex-direction: row-reverse;
-}
 #blog-articles .project .opaque[dir="ltr"] {
     direction: ltr;
     text-align: left;

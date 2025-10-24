@@ -86,7 +86,6 @@ fetch('/fetchblog').then(r => r.json()).then(articles => {
             
             articleElement.innerHTML = `
                 <a href="${article.link}" target="_blank" rel="noopener noreferrer">
-                    <div class="article-indicator"></div>
                     <div class="bold" dir="${titleIsArabic ? 'rtl' : 'ltr'}" lang="${titleIsArabic ? 'ar' : 'en'}">${article.title}</div>
                     <div class="opaque" dir="${descriptionIsArabic ? 'rtl' : 'ltr'}" lang="${descriptionIsArabic ? 'ar' : 'en'}">${article.description}</div>
                     <div class="meta">
@@ -107,7 +106,6 @@ fetch('/fetchblog').then(r => r.json()).then(articles => {
         blogContainer.innerHTML = `
             <div class="project">
                 <a href="https://purpleyard.xyz" target="_blank" rel="noopener noreferrer">
-                    <div class="article-indicator"></div>
                     <div class="bold" dir="rtl" lang="ar">مرحباً بك في PurpleYard</div>
                     <div class="opaque" dir="rtl" lang="ar">زر مدونتي لقراءة أحدث المقالات</div>
                     <div class="meta">
@@ -480,5 +478,60 @@ document.querySelector('.recorder').addEventListener('click', async () => {
         recoder.stop();
         stream.getTracks().forEach(track => track.stop());
         isRecording = false;
+    }
+});
+
+// Goodreads widget functionality
+fetch('/fetchgoodreads').then(r => r.json()).then(activities => {
+    console.log('Goodreads data received:', activities);
+    const goodreadsWidget = document.querySelector('.goodreads');
+    
+    if (activities && activities.length > 0 && goodreadsWidget) {
+        const activityElements = goodreadsWidget.querySelectorAll('.activity');
+        
+        activities.forEach((activity, index) => {
+            if (index < activityElements.length) {
+                const activityElement = activityElements[index];
+                const statusElement = activityElement.querySelector('.status');
+                const titleElement = activityElement.querySelector('.title');
+                const timeElement = activityElement.querySelector('time');
+                const imageElement = activityElement.querySelector('.image');
+                
+                if (statusElement) statusElement.textContent = activity.status;
+                if (titleElement) titleElement.textContent = activity.title;
+                if (timeElement) timeElement.textContent = activity.time;
+                
+                if (imageElement && activity.image) {
+                    imageElement.style.backgroundImage = `url(${activity.image})`;
+                }
+                
+                // Make the activity clickable
+                if (activity.link) {
+                    activityElement.href = activity.link;
+                    activityElement.target = '_blank';
+                    activityElement.rel = 'noopener noreferrer';
+                }
+            }
+        });
+    }
+}).catch(error => {
+    console.error('Error fetching Goodreads data:', error);
+    const goodreadsWidget = document.querySelector('.goodreads');
+    if (goodreadsWidget) {
+        const activityElements = goodreadsWidget.querySelectorAll('.activity');
+        if (activityElements.length > 0) {
+            const firstActivity = activityElements[0];
+            const statusElement = firstActivity.querySelector('.status');
+            const titleElement = firstActivity.querySelector('.title');
+            const timeElement = firstActivity.querySelector('time');
+            
+            if (statusElement) statusElement.textContent = 'Reading';
+            if (titleElement) titleElement.textContent = 'Check out my Goodreads profile';
+            if (timeElement) timeElement.textContent = 'Visit Profile';
+            
+            firstActivity.href = 'https://www.goodreads.com/user/show/187863776';
+            firstActivity.target = '_blank';
+            firstActivity.rel = 'noopener noreferrer';
+        }
     }
 });
