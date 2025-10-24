@@ -482,56 +482,115 @@ document.querySelector('.recorder').addEventListener('click', async () => {
 });
 
 // Goodreads widget functionality
-fetch('/fetchgoodreads').then(r => r.json()).then(activities => {
-    console.log('Goodreads data received:', activities);
-    const goodreadsWidget = document.querySelector('.goodreads');
-    
-    if (activities && activities.length > 0 && goodreadsWidget) {
-        const activityElements = goodreadsWidget.querySelectorAll('.activity');
+console.log('Fetching Goodreads data...');
+fetch('/fetchgoodreads')
+    .then(response => {
+        console.log('Goodreads response status:', response.status);
+        console.log('Goodreads response headers:', Object.fromEntries(response.headers.entries()));
+        return response.json();
+    })
+    .then(activities => {
+        console.log('Goodreads data received:', activities);
+        console.log('Activities count:', activities ? activities.length : 0);
         
-        activities.forEach((activity, index) => {
-            if (index < activityElements.length) {
-                const activityElement = activityElements[index];
-                const statusElement = activityElement.querySelector('.status');
-                const titleElement = activityElement.querySelector('.title');
-                const timeElement = activityElement.querySelector('time');
-                const imageElement = activityElement.querySelector('.image');
+        const goodreadsWidget = document.querySelector('.goodreads');
+        console.log('Goodreads widget found:', !!goodreadsWidget);
+        
+        if (activities && activities.length > 0 && goodreadsWidget) {
+            const activityElements = goodreadsWidget.querySelectorAll('.activity');
+            console.log('Activity elements found:', activityElements.length);
+            
+            activities.forEach((activity, index) => {
+                console.log(`Processing activity ${index + 1}:`, activity);
                 
-                if (statusElement) statusElement.textContent = activity.status;
-                if (titleElement) titleElement.textContent = activity.title;
-                if (timeElement) timeElement.textContent = activity.time;
-                
-                if (imageElement && activity.image) {
-                    imageElement.style.backgroundImage = `url(${activity.image})`;
+                if (index < activityElements.length) {
+                    const activityElement = activityElements[index];
+                    const statusElement = activityElement.querySelector('.status');
+                    const titleElement = activityElement.querySelector('.title');
+                    const timeElement = activityElement.querySelector('time');
+                    const imageElement = activityElement.querySelector('.image');
+                    
+                    console.log('Elements found:', {
+                        status: !!statusElement,
+                        title: !!titleElement,
+                        time: !!timeElement,
+                        image: !!imageElement
+                    });
+                    
+                    if (statusElement) {
+                        statusElement.textContent = activity.status || 'Reading';
+                        console.log('Set status:', activity.status);
+                    }
+                    
+                    if (titleElement) {
+                        titleElement.textContent = activity.title || 'Book';
+                        console.log('Set title:', activity.title);
+                    }
+                    
+                    if (timeElement) {
+                        timeElement.textContent = activity.time || 'Recent';
+                        console.log('Set time:', activity.time);
+                    }
+                    
+                    if (imageElement && activity.image) {
+                        imageElement.style.backgroundImage = `url(${activity.image})`;
+                        imageElement.style.backgroundSize = 'cover';
+                        imageElement.style.backgroundPosition = 'center';
+                        imageElement.style.backgroundRepeat = 'no-repeat';
+                        console.log('Set image:', activity.image);
+                    }
+                    
+                    // Make the activity clickable
+                    if (activity.link) {
+                        activityElement.href = activity.link;
+                        activityElement.target = '_blank';
+                        activityElement.rel = 'noopener noreferrer';
+                        console.log('Set link:', activity.link);
+                    }
                 }
-                
-                // Make the activity clickable
-                if (activity.link) {
-                    activityElement.href = activity.link;
-                    activityElement.target = '_blank';
-                    activityElement.rel = 'noopener noreferrer';
+            });
+        } else {
+            console.log('No activities or widget not found, setting fallback');
+            const goodreadsWidget = document.querySelector('.goodreads');
+            if (goodreadsWidget) {
+                const activityElements = goodreadsWidget.querySelectorAll('.activity');
+                if (activityElements.length > 0) {
+                    const firstActivity = activityElements[0];
+                    const statusElement = firstActivity.querySelector('.status');
+                    const titleElement = firstActivity.querySelector('.title');
+                    const timeElement = firstActivity.querySelector('time');
+                    
+                    if (statusElement) statusElement.textContent = 'Reading';
+                    if (titleElement) titleElement.textContent = 'Check out my Goodreads profile';
+                    if (timeElement) timeElement.textContent = 'Visit Profile';
+                    
+                    firstActivity.href = 'https://www.goodreads.com/user/show/187863776';
+                    firstActivity.target = '_blank';
+                    firstActivity.rel = 'noopener noreferrer';
                 }
             }
-        });
-    }
-}).catch(error => {
-    console.error('Error fetching Goodreads data:', error);
-    const goodreadsWidget = document.querySelector('.goodreads');
-    if (goodreadsWidget) {
-        const activityElements = goodreadsWidget.querySelectorAll('.activity');
-        if (activityElements.length > 0) {
-            const firstActivity = activityElements[0];
-            const statusElement = firstActivity.querySelector('.status');
-            const titleElement = firstActivity.querySelector('.title');
-            const timeElement = firstActivity.querySelector('time');
-            
-            if (statusElement) statusElement.textContent = 'Reading';
-            if (titleElement) titleElement.textContent = 'Check out my Goodreads profile';
-            if (timeElement) timeElement.textContent = 'Visit Profile';
-            
-            firstActivity.href = 'https://www.goodreads.com/user/show/187863776';
-            firstActivity.target = '_blank';
-            firstActivity.rel = 'noopener noreferrer';
         }
-    }
-});
+    })
+    .catch(error => {
+        console.error('Error fetching Goodreads data:', error);
+        console.error('Error stack:', error.stack);
+        
+        const goodreadsWidget = document.querySelector('.goodreads');
+        if (goodreadsWidget) {
+            const activityElements = goodreadsWidget.querySelectorAll('.activity');
+            if (activityElements.length > 0) {
+                const firstActivity = activityElements[0];
+                const statusElement = firstActivity.querySelector('.status');
+                const titleElement = firstActivity.querySelector('.title');
+                const timeElement = firstActivity.querySelector('time');
+                
+                if (statusElement) statusElement.textContent = 'Reading';
+                if (titleElement) titleElement.textContent = 'Check out my Goodreads profile';
+                if (timeElement) timeElement.textContent = 'Visit Profile';
+                
+                firstActivity.href = 'https://www.goodreads.com/user/show/187863776';
+                firstActivity.target = '_blank';
+                firstActivity.rel = 'noopener noreferrer';
+            }
+        }
+    });
