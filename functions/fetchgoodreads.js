@@ -3,34 +3,44 @@ export default {
         try {
             console.log('Fetching Goodreads RSS feed...');
             
-            // Fetch the Goodreads RSS feed
-            const rssResponse = await fetch('https://www.goodreads.com/user/updates_rss/187863776?key=ykFaD4-IQ7HvBptnxbocARC6Vq5yeUDawEu7VtxQjkyZbZBP', {
-                headers: {
-                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
-                    'Accept': 'application/rss+xml, application/xml, text/xml, */*',
-                    'Accept-Language': 'en-US,en;q=0.9',
-                    'Cache-Control': 'no-cache'
+            // Try multiple shelves to get books
+            const shelves = ['currently-reading', 'read', 'want-to-read'];
+            let activities = [];
+            let rssText = '';
+            
+            for (const shelf of shelves) {
+                console.log(`Trying shelf: ${shelf}`);
+                
+                const rssResponse = await fetch(`https://www.goodreads.com/review/list_rss/187863776?key=ykFaD4-IQ7HvBptnxbocARC6Vq5yeUDawEu7VtxQjkyZbZBP&shelf=${shelf}&per_page=20`, {
+                    headers: {
+                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+                        'Accept': 'application/rss+xml, application/xml, text/xml, */*',
+                        'Accept-Language': 'en-US,en;q=0.9',
+                        'Cache-Control': 'no-cache'
+                    }
+                });
+                
+                console.log(`RSS response status for ${shelf}:`, rssResponse.status);
+                
+                if (rssResponse.ok) {
+                    rssText = await rssResponse.text();
+                    console.log(`RSS feed fetched for ${shelf}, length:`, rssText.length);
+                    
+                    // Parse the RSS feed to get the latest activities
+                    activities = parseGoodreadsRSS(rssText);
+                    console.log(`Parsed activities count for ${shelf}:`, activities.length);
+                    
+                    if (activities.length > 0) {
+                        console.log(`Found ${activities.length} activities in ${shelf} shelf`);
+                        break;
+                    }
+                } else {
+                    console.log(`Failed to fetch ${shelf} shelf: ${rssResponse.status}`);
                 }
-            });
-            
-            console.log('RSS response status:', rssResponse.status);
-            console.log('RSS response headers:', Object.fromEntries(rssResponse.headers.entries()));
-            
-            if (!rssResponse.ok) {
-                console.error(`RSS feed request failed: ${rssResponse.status} ${rssResponse.statusText}`);
-                throw new Error(`RSS feed request failed: ${rssResponse.status}`);
             }
             
-            const rssText = await rssResponse.text();
-            console.log('RSS feed fetched, length:', rssText.length);
-            console.log('RSS feed content type:', rssResponse.headers.get('content-type'));
-            
-            // Parse the RSS feed to get the latest activities
-            const activities = parseGoodreadsRSS(rssText);
-            console.log('Parsed activities count:', activities.length);
-            
             if (activities.length === 0) {
-                console.log('No activities parsed, returning fallback data');
+                console.log('No activities found in any shelf, returning fallback data');
                 const fallbackActivities = [
                     {
                         status: "Reading",
@@ -125,6 +135,16 @@ function parseGoodreadsRSS(rssText) {
                 }
             }
             
+            // For review list RSS, extract book title and author from title
+            // Title format is usually "Book Title by Author Name"
+            let bookTitle = title;
+            let author = '';
+            const byMatch = title.match(/^(.+?)\s+by\s+(.+)$/);
+            if (byMatch) {
+                bookTitle = byMatch[1].trim();
+                author = byMatch[2].trim();
+            }
+            
             // Try multiple description patterns
             let description = '';
             const descPatterns = [
@@ -202,18 +222,19 @@ function parseGoodreadsRSS(rssText) {
                 }
             }
             
-            // Determine activity status from title/description
-            let status = "Reading";
+            // For review list RSS, determine status from shelf or description
+            let status = "Read";
             const titleLower = title.toLowerCase();
             const descLower = description.toLowerCase();
             
-            if (titleLower.includes('finished') || titleLower.includes('read') || descLower.includes('finished')) {
-                status = "Finished";
-            } else if (titleLower.includes('started') || titleLower.includes('reading') || descLower.includes('started')) {
+            // Check if it's from a specific shelf
+            if (descLower.includes('currently-reading') || titleLower.includes('currently reading')) {
                 status = "Reading";
-            } else if (titleLower.includes('want to read') || titleLower.includes('added') || descLower.includes('want to read')) {
+            } else if (descLower.includes('want-to-read') || titleLower.includes('want to read')) {
                 status = "Want to Read";
-            } else if (titleLower.includes('reviewed') || descLower.includes('reviewed')) {
+            } else if (descLower.includes('read') || titleLower.includes('read')) {
+                status = "Read";
+            } else if (descLower.includes('reviewed') || titleLower.includes('reviewed')) {
                 status = "Reviewed";
             }
             
@@ -246,11 +267,15 @@ function parseGoodreadsRSS(rssText) {
             }
             
             // Clean up title (remove HTML tags and extra whitespace)
-            const cleanTitle = title.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
+            const cleanTitle = bookTitle.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
+            const cleanAuthor = author.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
+            
+            // Create display title with author
+            const displayTitle = cleanAuthor ? `${cleanTitle} by ${cleanAuthor}` : cleanTitle;
             
             const activity = {
                 status: status,
-                title: cleanTitle,
+                title: displayTitle,
                 image: imageUrl,
                 time: formattedDate,
                 link: link
