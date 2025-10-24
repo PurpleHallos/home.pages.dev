@@ -594,3 +594,88 @@ fetch('/fetchgoodreads')
             }
         }
     });
+
+// Steam widget functionality
+console.log('Fetching Steam data...');
+fetch('/fetchsteam')
+    .then(response => {
+        console.log('Steam response status:', response.status);
+        console.log('Steam response headers:', Object.fromEntries(response.headers.entries()));
+        return response.json();
+    })
+    .then(gameData => {
+        console.log('Steam data received:', gameData);
+        
+        const steamWidget = document.querySelector('.steam');
+        console.log('Steam widget found:', !!steamWidget);
+        
+        if (gameData && steamWidget) {
+            const gameTitle = steamWidget.querySelector('.game-title');
+            const gamePlaytime = steamWidget.querySelector('.game-playtime');
+            const gameLastPlayed = steamWidget.querySelector('.game-last-played');
+            const gameImage = steamWidget.querySelector('.game-image');
+            
+            console.log('Steam elements found:', {
+                title: !!gameTitle,
+                playtime: !!gamePlaytime,
+                lastPlayed: !!gameLastPlayed,
+                image: !!gameImage
+            });
+            
+            if (gameTitle) {
+                gameTitle.textContent = gameData.gameName || 'Steam Profile';
+                console.log('Set game title:', gameData.gameName);
+            }
+            
+            if (gamePlaytime) {
+                gamePlaytime.textContent = gameData.playTime || 'Check out my Steam profile';
+                console.log('Set play time:', gameData.playTime);
+            }
+            
+            if (gameLastPlayed) {
+                gameLastPlayed.textContent = gameData.lastPlayed || 'Recent';
+                console.log('Set last played:', gameData.lastPlayed);
+            }
+            
+            if (gameImage && gameData.gameImage) {
+                gameImage.style.backgroundImage = `url(${gameData.gameImage})`;
+                console.log('Set game image:', gameData.gameImage);
+            }
+            
+            // Make the game info clickable to Steam profile
+            const gameInfo = steamWidget.querySelector('.game-info');
+            if (gameInfo && gameData.profileUrl) {
+                gameInfo.style.cursor = 'pointer';
+                gameInfo.addEventListener('click', () => {
+                    window.open(gameData.profileUrl, '_blank');
+                });
+            }
+        } else {
+            console.log('No game data or widget not found, setting fallback');
+            const steamWidget = document.querySelector('.steam');
+            if (steamWidget) {
+                const gameTitle = steamWidget.querySelector('.game-title');
+                const gamePlaytime = steamWidget.querySelector('.game-playtime');
+                const gameLastPlayed = steamWidget.querySelector('.game-last-played');
+                
+                if (gameTitle) gameTitle.textContent = 'Steam Profile';
+                if (gamePlaytime) gamePlaytime.textContent = 'Check out my Steam profile';
+                if (gameLastPlayed) gameLastPlayed.textContent = 'Visit Profile';
+            }
+        }
+    })
+    .catch(error => {
+        console.error('Error fetching Steam data:', error);
+        console.error('Error stack:', error.stack);
+        
+        const steamWidget = document.querySelector('.steam');
+        if (steamWidget) {
+            const gameTitle = steamWidget.querySelector('.game-title');
+            const gamePlaytime = steamWidget.querySelector('.game-playtime');
+            const gameLastPlayed = steamWidget.querySelector('.game-last-played');
+            
+            if (gameTitle) gameTitle.textContent = 'Steam Profile';
+            if (gamePlaytime) gamePlaytime.textContent = 'Check out my Steam profile';
+            if (gameLastPlayed) gameLastPlayed.textContent = 'Visit Profile';
+        }
+    });
