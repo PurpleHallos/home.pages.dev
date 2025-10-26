@@ -217,8 +217,15 @@ function parseGoodreadsRSS(rssText) {
                 const dateMatch = itemContent.match(pattern);
                 if (dateMatch && dateMatch[1]) {
                     pubDate = dateMatch[1].trim();
+                    console.log('Found date:', pubDate);
                     break;
                 }
+            }
+            
+            // If no date found, use current date
+            if (!pubDate) {
+                pubDate = new Date().toISOString();
+                console.log('No date found, using current date:', pubDate);
             }
             
             // Format date with better Arabic formatting
@@ -226,28 +233,35 @@ function parseGoodreadsRSS(rssText) {
             if (pubDate) {
                 try {
                     const date = new Date(pubDate);
-                    const now = new Date();
-                    const diffTime = Math.abs(now - date);
-                    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
                     
-                    if (diffDays === 0) {
-                        formattedDate = 'اليوم';
-                    } else if (diffDays === 1) {
-                        formattedDate = 'أمس';
-                    } else if (diffDays < 7) {
-                        formattedDate = `منذ ${diffDays} أيام`;
-                    } else if (diffDays < 30) {
-                        const weeks = Math.floor(diffDays / 7);
-                        formattedDate = weeks === 1 ? 'منذ أسبوع' : `منذ ${weeks} أسابيع`;
-                    } else if (diffDays < 365) {
-                        const months = Math.floor(diffDays / 30);
-                        formattedDate = months === 1 ? 'منذ شهر' : `منذ ${months} أشهر`;
+                    // Check if the date is valid
+                    if (isNaN(date.getTime())) {
+                        console.log('Invalid date:', pubDate);
+                        formattedDate = 'حديث';
                     } else {
-                        formattedDate = date.toLocaleDateString('ar-SA', { 
-                            year: 'numeric',
-                            month: 'short', 
-                            day: 'numeric' 
-                        });
+                        const now = new Date();
+                        const diffTime = Math.abs(now - date);
+                        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                        
+                        if (diffDays === 0) {
+                            formattedDate = 'اليوم';
+                        } else if (diffDays === 1) {
+                            formattedDate = 'أمس';
+                        } else if (diffDays < 7) {
+                            formattedDate = `منذ ${diffDays} أيام`;
+                        } else if (diffDays < 30) {
+                            const weeks = Math.floor(diffDays / 7);
+                            formattedDate = weeks === 1 ? 'منذ أسبوع' : `منذ ${weeks} أسابيع`;
+                        } else if (diffDays < 365) {
+                            const months = Math.floor(diffDays / 30);
+                            formattedDate = months === 1 ? 'منذ شهر' : `منذ ${months} أشهر`;
+                        } else {
+                            formattedDate = date.toLocaleDateString('ar-SA', { 
+                                year: 'numeric',
+                                month: 'short', 
+                                day: 'numeric' 
+                            });
+                        }
                     }
                 } catch (e) {
                     console.error('Error formatting date:', e);
@@ -271,6 +285,11 @@ function parseGoodreadsRSS(rssText) {
                 status = "مقروء";
             } else if (descLower.includes('reviewed') || titleLower.includes('reviewed')) {
                 status = "مراجع";
+            }
+            
+            // Ensure we never return "Invalid Date" or empty time
+            if (!formattedDate || formattedDate === 'Invalid Date' || formattedDate.includes('Invalid')) {
+                formattedDate = 'حديث';
             }
             
             const activity = {

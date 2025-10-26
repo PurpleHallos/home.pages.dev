@@ -528,8 +528,14 @@ fetch('/fetchgoodreads')
                     }
                     
                     if (timeElement) {
-                        timeElement.textContent = activity.time || 'حديث';
-                        console.log('Set time:', activity.time);
+                        const timeValue = activity.time || 'حديث';
+                        // Ensure we never display "Invalid Date"
+                        if (timeValue === 'Invalid Date' || timeValue.includes('Invalid')) {
+                            timeElement.textContent = 'حديث';
+                        } else {
+                            timeElement.textContent = timeValue;
+                        }
+                        console.log('Set time:', timeValue);
                     }
                     
                     if (imageElement && activity.image) {
