@@ -287,9 +287,18 @@ main {
     text-align: right;
 }
 
-/* Specific spacing for email widget */
+/* Email widget specific layout - icon above text */
+.widget a[href^="mailto:"] .content {
+    flex-direction: column !important;
+    align-items: flex-end;
+    justify-content: center;
+    text-align: right;
+}
+
 .widget a[href^="mailto:"] .meta {
-    margin-left: 40px !important;
+    margin-left: 0 !important;
+    margin-top: 15px;
+    text-align: right;
 }
 
 @media (width < 880px) {
