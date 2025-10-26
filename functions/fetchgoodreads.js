@@ -97,28 +97,28 @@ function getFallbackData() {
             status: "قراءة",
             title: "تحقق من ملفي الشخصي في جود ريدز",
             image: "https://images-na.ssl-images-amazon.com/images/I/51ZSpMl1-LL._SX331_BO1,204,203,200_.jpg",
-            time: now.toLocaleDateString('en-US', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' }),
+            time: "اليوم",
             link: "https://www.goodreads.com/user/show/187863776"
         },
         {
             status: "مقروء",
             title: "Goodreads Profile",
             image: "https://images-na.ssl-images-amazon.com/images/I/41d1gVUK1yL._SX331_BO1,204,203,200_.jpg",
-            time: yesterday.toLocaleDateString('en-US', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' }),
+            time: "أمس",
             link: "https://www.goodreads.com/user/show/187863776"
         },
         {
             status: "أريد القراءة",
             title: "زيارة الملف الشخصي",
             image: "https://images-na.ssl-images-amazon.com/images/I/51W1r7OoqJL._SX331_BO1,204,203,200_.jpg",
-            time: threeDaysAgo.toLocaleDateString('en-US', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' }),
+            time: "منذ 3 أيام",
             link: "https://www.goodreads.com/user/show/187863776"
         },
         {
             status: "مراجع",
             title: "Goodreads Activity",
             image: "https://images-na.ssl-images-amazon.com/images/I/41yJ75gpV-L._SX331_BO1,204,203,200_.jpg",
-            time: oneWeekAgo.toLocaleDateString('en-US', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' }),
+            time: "منذ أسبوع",
             link: "https://www.goodreads.com/user/show/187863776"
         }
     ];
@@ -233,8 +233,8 @@ function parseGoodreadsRSS(rssText) {
                 console.log('No date found, using current date:', pubDate);
             }
             
-            // Format date to show exact date like "Fri, 24 Oct 2025"
-            let formattedDate = 'حديث';
+            // Format date to show relative time since added to Goodreads
+            let formattedDate = '';
             if (pubDate) {
                 try {
                     const date = new Date(pubDate);
@@ -242,20 +242,38 @@ function parseGoodreadsRSS(rssText) {
                     // Check if the date is valid
                     if (isNaN(date.getTime())) {
                         console.log('Invalid date:', pubDate);
-                        formattedDate = 'حديث';
+                        formattedDate = '';
                     } else {
-                        // Format as "Fri, 24 Oct 2025" style
-                        formattedDate = date.toLocaleDateString('en-US', {
-                            weekday: 'short',
-                            day: 'numeric',
-                            month: 'short',
-                            year: 'numeric'
-                        });
+                        const now = new Date();
+                        const diffTime = Math.abs(now - date);
+                        const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+                        
+                        if (diffDays === 0) {
+                            formattedDate = 'اليوم';
+                        } else if (diffDays === 1) {
+                            formattedDate = 'أمس';
+                        } else if (diffDays < 30) {
+                            formattedDate = `منذ ${diffDays} أيام`;
+                        } else if (diffDays < 365) {
+                            const months = Math.floor(diffDays / 30);
+                            if (months === 1) {
+                                formattedDate = 'منذ شهر';
+                            } else {
+                                formattedDate = `منذ ${months} أشهر`;
+                            }
+                        } else {
+                            const years = Math.floor(diffDays / 365);
+                            if (years === 1) {
+                                formattedDate = 'منذ سنة';
+                            } else {
+                                formattedDate = `منذ ${years} سنوات`;
+                            }
+                        }
                         console.log('Formatted date:', formattedDate);
                     }
                 } catch (e) {
                     console.error('Error formatting date:', e);
-                    formattedDate = 'حديث';
+                    formattedDate = '';
                 }
             }
             

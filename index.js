@@ -528,10 +528,10 @@ fetch('/fetchgoodreads')
                     }
                     
                     if (timeElement) {
-                        const timeValue = activity.time || 'حديث';
-                        // Ensure we never display "Invalid Date"
-                        if (timeValue === 'Invalid Date' || timeValue.includes('Invalid')) {
-                            timeElement.textContent = 'حديث';
+                        const timeValue = activity.time || '';
+                        // Ensure we never display "Invalid Date" or empty fallback labels
+                        if (timeValue === 'Invalid Date' || timeValue.includes('Invalid') || timeValue === 'حديث') {
+                            timeElement.textContent = '';
                         } else {
                             timeElement.textContent = timeValue;
                         }
@@ -592,7 +592,7 @@ fetch('/fetchgoodreads')
                 
                 if (statusElement) statusElement.textContent = 'قراءة';
                 if (titleElement) titleElement.textContent = 'تحقق من ملفي الشخصي في جود ريدز';
-                if (timeElement) timeElement.textContent = 'زر الملف الشخصي';
+                if (timeElement) timeElement.textContent = '';
                 
                 firstActivity.href = 'https://www.goodreads.com/user/show/187863776';
                 firstActivity.target = '_blank';
