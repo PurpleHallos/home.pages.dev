@@ -4,13 +4,17 @@
     --widget-hover: #defb;
     font-weight: 500;
     line-height: 1.4;
-    font-family: Inter, system-ui, sans-serif;
+    font-family: 'Segoe UI', 'Tahoma', 'Arial', 'Noto Sans Arabic', 'Cairo', 'Amiri', system-ui, sans-serif;
+    direction: rtl;
+    text-align: right;
 }
 
 body {
     margin: 0 auto;
     min-width: 320px;
     max-width: min(1280px, 100% - 100px);
+    direction: rtl;
+    text-align: right;
 }
 
 @media (width < 880px) {
@@ -31,7 +35,7 @@ body {
 
 header {
     display: flex;
-    flex-direction: row;
+    flex-direction: row-reverse;
     align-items: center;
     gap: 50px;
     transform: translateY(-50%);
@@ -267,17 +271,20 @@ main {
 
 .widget .meta {
     margin-top: 10px;
+    text-align: right;
 }
 
 .widget[style*='--rows: 1;'] .content {
-    flex-direction: row;
+    flex-direction: row-reverse;
     align-items: center;
 }
 
 .widget[style*='--rows: 1;'] .meta {
     margin-top: 0;
-    margin-left: 20px;
+    margin-right: 20px;
+    margin-left: 0;
     white-space: nowrap;
+    text-align: right;
 }
 
 @media (width < 880px) {
@@ -323,7 +330,7 @@ main {
 }
 
 .discord .content {
-    flex-direction: row;
+    flex-direction: row-reverse;
     align-items: center;
 }
 
@@ -345,9 +352,11 @@ main {
 .discord .meta {
     align-self: center;
     margin-top: 0;
-    margin-left: 14px;
+    margin-right: 14px;
+    margin-left: 0;
     width: 100%;
     min-width: 0;
+    text-align: right;
 }
 
 .discord .color-dot {
@@ -419,7 +428,7 @@ main {
 }
 
 .anilist .content {
-    flex-direction: row;
+    flex-direction: row-reverse;
     align-items: center;
     color: #000;
 }
@@ -430,9 +439,11 @@ main {
 
 .anilist .meta {
     margin-top: 0;
-    margin-left: 14px;
+    margin-right: 14px;
+    margin-left: 0;
     width: 100%;
     min-width: 0;
+    text-align: right;
 }
 
 .anilist .activity-container {
@@ -472,7 +483,7 @@ main {
 }
 
 .goodreads .content {
-    flex-direction: row;
+    flex-direction: row-reverse;
     align-items: center;
     color: #000;
 }
@@ -483,9 +494,11 @@ main {
 
 .goodreads .meta {
     margin-top: 0;
-    margin-left: 14px;
+    margin-right: 14px;
+    margin-left: 0;
     width: 100%;
     min-width: 0;
+    text-align: right;
 }
 
 .goodreads .activity-container {
@@ -525,7 +538,7 @@ main {
 }
 
 .steam .content {
-    flex-direction: row;
+    flex-direction: row-reverse;
     align-items: center;
     color: #000;
 }
@@ -536,9 +549,11 @@ main {
 
 .steam .meta {
     margin-top: 0;
-    margin-left: 14px;
+    margin-right: 14px;
+    margin-left: 0;
     width: 100%;
     min-width: 0;
+    text-align: right;
 }
 
 .steam .game-info {
@@ -850,7 +865,7 @@ aside {
 
 .youtube .content {
     display: flex;
-    flex-direction: row;
+    flex-direction: row-reverse;
     align-items: center;
 }
 
@@ -860,9 +875,11 @@ aside {
 
 .youtube .meta {
     margin-top: 0;
-    margin-left: 14px;
+    margin-right: 14px;
+    margin-left: 0;
     width: 100%;
     min-width: 0;
+    text-align: right;
 }
 
 .youtube .video-info {

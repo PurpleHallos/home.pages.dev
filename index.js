@@ -193,7 +193,7 @@ fetch('/fetchyoutube').then(r => r.json()).then(video => {
         
         // Update the loading text
         const loadingText = youtubeWidget.querySelector('.opaque');
-        if (loadingText) loadingText.textContent = 'Hallos | هالوس';
+        if (loadingText) loadingText.textContent = 'هالوس | Hallos';
     }
 }).catch(error => {
     console.error('Error fetching YouTube data:', error);
@@ -204,9 +204,9 @@ fetch('/fetchyoutube').then(r => r.json()).then(video => {
         const videoDate = youtubeWidget.querySelector('.video-date');
         const loadingText = youtubeWidget.querySelector('.opaque');
         
-        if (videoTitle) videoTitle.textContent = 'Welcome to PurpleHallos';
-        if (videoDescription) videoDescription.textContent = 'Check out my latest content on YouTube!';
-        if (videoDate) videoDate.textContent = 'Visit Channel';
+        if (videoTitle) videoTitle.textContent = 'مرحباً بك في PurpleHallos';
+        if (videoDescription) videoDescription.textContent = 'تحقق من أحدث محتواي على يوتيوب!';
+        if (videoDate) videoDate.textContent = 'زر القناة';
         if (loadingText) loadingText.textContent = 'PurpleHallos';
         
         // Make it clickable to open YouTube channel
@@ -518,17 +518,17 @@ fetch('/fetchgoodreads')
                     });
                     
                     if (statusElement) {
-                        statusElement.textContent = activity.status || 'Reading';
+                        statusElement.textContent = activity.status || 'قراءة';
                         console.log('Set status:', activity.status);
                     }
                     
                     if (titleElement) {
-                        titleElement.textContent = activity.title || 'Book';
+                        titleElement.textContent = activity.title || 'كتاب';
                         console.log('Set title:', activity.title);
                     }
                     
                     if (timeElement) {
-                        timeElement.textContent = activity.time || 'Recent';
+                        timeElement.textContent = activity.time || 'حديث';
                         console.log('Set time:', activity.time);
                     }
                     
@@ -560,9 +560,9 @@ fetch('/fetchgoodreads')
                     const titleElement = firstActivity.querySelector('.title');
                     const timeElement = firstActivity.querySelector('time');
                     
-                    if (statusElement) statusElement.textContent = 'Reading';
-                    if (titleElement) titleElement.textContent = 'Check out my Goodreads profile';
-                    if (timeElement) timeElement.textContent = 'Visit Profile';
+                    if (statusElement) statusElement.textContent = 'قراءة';
+                    if (titleElement) titleElement.textContent = 'تحقق من ملفي الشخصي في جود ريدز';
+                    if (timeElement) timeElement.textContent = 'زر الملف الشخصي';
                     
                     firstActivity.href = 'https://www.goodreads.com/user/show/187863776';
                     firstActivity.target = '_blank';
@@ -584,9 +584,9 @@ fetch('/fetchgoodreads')
                 const titleElement = firstActivity.querySelector('.title');
                 const timeElement = firstActivity.querySelector('time');
                 
-                if (statusElement) statusElement.textContent = 'Reading';
-                if (titleElement) titleElement.textContent = 'Check out my Goodreads profile';
-                if (timeElement) timeElement.textContent = 'Visit Profile';
+                if (statusElement) statusElement.textContent = 'قراءة';
+                if (titleElement) titleElement.textContent = 'تحقق من ملفي الشخصي في جود ريدز';
+                if (timeElement) timeElement.textContent = 'زر الملف الشخصي';
                 
                 firstActivity.href = 'https://www.goodreads.com/user/show/187863776';
                 firstActivity.target = '_blank';
@@ -623,17 +623,17 @@ fetch('/fetchsteam')
             });
             
             if (gameTitle) {
-                gameTitle.textContent = gameData.gameName || 'Steam Profile';
+                gameTitle.textContent = gameData.gameName || 'ملف ستيم الشخصي';
                 console.log('Set game title:', gameData.gameName);
             }
             
             if (gamePlaytime) {
-                gamePlaytime.textContent = gameData.playTime || 'Check out my Steam profile';
+                gamePlaytime.textContent = gameData.playTime || 'تحقق من ملفي الشخصي في ستيم';
                 console.log('Set play time:', gameData.playTime);
             }
             
             if (gameLastPlayed) {
-                gameLastPlayed.textContent = gameData.lastPlayed || 'Recent';
+                gameLastPlayed.textContent = gameData.lastPlayed || 'حديث';
                 console.log('Set last played:', gameData.lastPlayed);
             }
             
@@ -658,9 +658,9 @@ fetch('/fetchsteam')
                 const gamePlaytime = steamWidget.querySelector('.game-playtime');
                 const gameLastPlayed = steamWidget.querySelector('.game-last-played');
                 
-                if (gameTitle) gameTitle.textContent = 'Steam Profile';
-                if (gamePlaytime) gamePlaytime.textContent = 'Check out my Steam profile';
-                if (gameLastPlayed) gameLastPlayed.textContent = 'Visit Profile';
+                if (gameTitle) gameTitle.textContent = 'ملف ستيم الشخصي';
+                if (gamePlaytime) gamePlaytime.textContent = 'تحقق من ملفي الشخصي في ستيم';
+                if (gameLastPlayed) gameLastPlayed.textContent = 'زر الملف الشخصي';
             }
         }
     })
@@ -674,8 +674,8 @@ fetch('/fetchsteam')
             const gamePlaytime = steamWidget.querySelector('.game-playtime');
             const gameLastPlayed = steamWidget.querySelector('.game-last-played');
             
-            if (gameTitle) gameTitle.textContent = 'Steam Profile';
-            if (gamePlaytime) gamePlaytime.textContent = 'Check out my Steam profile';
-            if (gameLastPlayed) gameLastPlayed.textContent = 'Visit Profile';
+            if (gameTitle) gameTitle.textContent = 'ملف ستيم الشخصي';
+            if (gamePlaytime) gamePlaytime.textContent = 'تحقق من ملفي الشخصي في ستيم';
+            if (gameLastPlayed) gameLastPlayed.textContent = 'زر الملف الشخصي';
         }
     });
