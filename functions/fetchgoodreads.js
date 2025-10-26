@@ -87,33 +87,38 @@ export async function onRequestGet({ request, waitUntil }) {
 }
 
 function getFallbackData() {
+    const now = new Date();
+    const yesterday = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+    const threeDaysAgo = new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000);
+    const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+    
     return [
         {
             status: "قراءة",
             title: "تحقق من ملفي الشخصي في جود ريدز",
             image: "https://images-na.ssl-images-amazon.com/images/I/51ZSpMl1-LL._SX331_BO1,204,203,200_.jpg",
-            time: "اليوم",
+            time: now.toLocaleDateString('en-US', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' }),
             link: "https://www.goodreads.com/user/show/187863776"
         },
         {
             status: "مقروء",
             title: "Goodreads Profile",
             image: "https://images-na.ssl-images-amazon.com/images/I/41d1gVUK1yL._SX331_BO1,204,203,200_.jpg",
-            time: "أمس",
+            time: yesterday.toLocaleDateString('en-US', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' }),
             link: "https://www.goodreads.com/user/show/187863776"
         },
         {
             status: "أريد القراءة",
             title: "زيارة الملف الشخصي",
             image: "https://images-na.ssl-images-amazon.com/images/I/51W1r7OoqJL._SX331_BO1,204,203,200_.jpg",
-            time: "منذ 3 أيام",
+            time: threeDaysAgo.toLocaleDateString('en-US', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' }),
             link: "https://www.goodreads.com/user/show/187863776"
         },
         {
             status: "مراجع",
             title: "Goodreads Activity",
             image: "https://images-na.ssl-images-amazon.com/images/I/41yJ75gpV-L._SX331_BO1,204,203,200_.jpg",
-            time: "منذ أسبوع",
+            time: oneWeekAgo.toLocaleDateString('en-US', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' }),
             link: "https://www.goodreads.com/user/show/187863776"
         }
     ];
@@ -228,7 +233,7 @@ function parseGoodreadsRSS(rssText) {
                 console.log('No date found, using current date:', pubDate);
             }
             
-            // Format date with better Arabic formatting
+            // Format date to show exact date like "Fri, 24 Oct 2025"
             let formattedDate = 'حديث';
             if (pubDate) {
                 try {
@@ -239,29 +244,14 @@ function parseGoodreadsRSS(rssText) {
                         console.log('Invalid date:', pubDate);
                         formattedDate = 'حديث';
                     } else {
-                        const now = new Date();
-                        const diffTime = Math.abs(now - date);
-                        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                        
-                        if (diffDays === 0) {
-                            formattedDate = 'اليوم';
-                        } else if (diffDays === 1) {
-                            formattedDate = 'أمس';
-                        } else if (diffDays < 7) {
-                            formattedDate = `منذ ${diffDays} أيام`;
-                        } else if (diffDays < 30) {
-                            const weeks = Math.floor(diffDays / 7);
-                            formattedDate = weeks === 1 ? 'منذ أسبوع' : `منذ ${weeks} أسابيع`;
-                        } else if (diffDays < 365) {
-                            const months = Math.floor(diffDays / 30);
-                            formattedDate = months === 1 ? 'منذ شهر' : `منذ ${months} أشهر`;
-                        } else {
-                            formattedDate = date.toLocaleDateString('ar-SA', { 
-                                year: 'numeric',
-                                month: 'short', 
-                                day: 'numeric' 
-                            });
-                        }
+                        // Format as "Fri, 24 Oct 2025" style
+                        formattedDate = date.toLocaleDateString('en-US', {
+                            weekday: 'short',
+                            day: 'numeric',
+                            month: 'short',
+                            year: 'numeric'
+                        });
+                        console.log('Formatted date:', formattedDate);
                     }
                 } catch (e) {
                     console.error('Error formatting date:', e);
