@@ -1,70 +1,88 @@
-export default {
-    async fetch(request, env, ctx) {
-        try {
-            console.log('Fetching Goodreads RSS feed...');
-            
-            // Goodreads RSS feed URL (no API key needed)
-            const userId = '187863776'; // Your Goodreads user ID
-            const rssUrl = `https://www.goodreads.com/review/list_rss/${userId}?shelf=currently-reading&per_page=10`;
-            
-            console.log('Fetching RSS from:', rssUrl);
-            
-            const rssResponse = await fetch(rssUrl, {
-                headers: {
-                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-                    'Accept': 'application/rss+xml, application/xml, text/xml, */*',
-                    'Accept-Language': 'en-US,en;q=0.9',
-                    'Cache-Control': 'no-cache'
-                }
-            });
-            
-            console.log('RSS response status:', rssResponse.status);
-            
-            if (!rssResponse.ok) {
-                throw new Error(`RSS fetch failed with status: ${rssResponse.status}`);
-            }
-            
-            const rssText = await rssResponse.text();
-            console.log('RSS feed fetched, length:', rssText.length);
-            
-            // Parse the RSS feed
-            const activities = parseGoodreadsRSS(rssText);
-            console.log('Parsed activities count:', activities.length);
-            
-            if (activities.length === 0) {
-                console.log('No activities found, returning fallback data');
-                return new Response(JSON.stringify(getFallbackData()), {
+export async function onRequestGet({ request, waitUntil }) {
+    try {
+        console.log('Fetching Goodreads RSS feed...');
+        
+        // Try multiple RSS feed URLs since Goodreads format may vary
+        const userId = '187863776';
+        const rssUrls = [
+            `https://www.goodreads.com/review/list_rss/${userId}?shelf=currently-reading&per_page=10`,
+            `https://www.goodreads.com/review/list_rss/${userId}?shelf=read&per_page=10`,
+            `https://www.goodreads.com/review/list_rss/${userId}?per_page=10`,
+            `https://www.goodreads.com/user/${userId}/books.rss`
+        ];
+        
+        let activities = [];
+        let lastError = null;
+        
+        for (const rssUrl of rssUrls) {
+            try {
+                console.log('Trying RSS URL:', rssUrl);
+                
+                const rssResponse = await fetch(rssUrl, {
                     headers: {
-                        'Content-Type': 'application/json',
-                        'Access-Control-Allow-Origin': '*',
-                        'Cache-Control': 'public, max-age=300'
+                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                        'Accept': 'application/rss+xml, application/xml, text/xml, */*',
+                        'Accept-Language': 'en-US,en;q=0.9',
+                        'Cache-Control': 'no-cache'
                     }
                 });
-            }
-            
-            return new Response(JSON.stringify(activities), {
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Access-Control-Allow-Origin': '*',
-                    'Cache-Control': 'public, max-age=300' // Cache for 5 minutes
+                
+                console.log('RSS response status:', rssResponse.status);
+                
+                if (rssResponse.ok) {
+                    const rssText = await rssResponse.text();
+                    console.log('RSS feed fetched, length:', rssText.length);
+                    
+                    // Parse the RSS feed
+                    activities = parseGoodreadsRSS(rssText);
+                    console.log('Parsed activities count:', activities.length);
+                    
+                    if (activities.length > 0) {
+                        console.log('Successfully found activities, breaking loop');
+                        break;
+                    }
+                } else {
+                    console.log(`RSS URL failed with status: ${rssResponse.status}`);
                 }
-            });
-            
-        } catch (error) {
-            console.error('Error fetching Goodreads data:', error);
-            console.error('Error stack:', error.stack);
-            
-            // Return fallback data if fetch fails
+            } catch (error) {
+                console.log(`Error with RSS URL ${rssUrl}:`, error.message);
+                lastError = error;
+            }
+        }
+        
+        if (activities.length === 0) {
+            console.log('No activities found in any RSS feed, returning fallback data');
             return new Response(JSON.stringify(getFallbackData()), {
                 headers: {
                     'Content-Type': 'application/json',
                     'Access-Control-Allow-Origin': '*',
-                    'Cache-Control': 'public, max-age=60'
+                    'Cache-Control': 'public, max-age=300'
                 }
             });
         }
+        
+        return new Response(JSON.stringify(activities), {
+            headers: {
+                'Content-Type': 'application/json',
+                'Access-Control-Allow-Origin': '*',
+                'Cache-Control': 'public, max-age=300'
+            }
+        });
+        
+    } catch (error) {
+        console.error('Error fetching Goodreads data:', error);
+        console.error('Error stack:', error.stack);
+        
+        // Return fallback data if fetch fails
+        return new Response(JSON.stringify(getFallbackData()), {
+            headers: {
+                'Content-Type': 'application/json',
+                'Access-Control-Allow-Origin': '*',
+                'Cache-Control': 'public, max-age=60'
+            }
+        });
     }
-};
+}
 
 function getFallbackData() {
     return [
@@ -80,6 +98,20 @@ function getFallbackData() {
             title: "Goodreads Profile",
             image: "https://images-na.ssl-images-amazon.com/images/I/51ZSpMl1-LL._SX331_BO1,204,203,200_.jpg",
             time: "حديث",
+            link: "https://www.goodreads.com/user/show/187863776"
+        },
+        {
+            status: "مقروء",
+            title: "Sample Book Title",
+            image: "https://images-na.ssl-images-amazon.com/images/I/51ZSpMl1-LL._SX331_BO1,204,203,200_.jpg",
+            time: "منذ أسبوع",
+            link: "https://www.goodreads.com/user/show/187863776"
+        },
+        {
+            status: "أريد القراءة",
+            title: "Another Book Title",
+            image: "https://images-na.ssl-images-amazon.com/images/I/51ZSpMl1-LL._SX331_BO1,204,203,200_.jpg",
+            time: "منذ شهر",
             link: "https://www.goodreads.com/user/show/187863776"
         }
     ];
