@@ -8,7 +8,9 @@ export async function onRequestGet({ request, waitUntil }) {
             `https://www.goodreads.com/review/list_rss/${userId}?shelf=currently-reading&per_page=10`,
             `https://www.goodreads.com/review/list_rss/${userId}?shelf=read&per_page=10`,
             `https://www.goodreads.com/review/list_rss/${userId}?per_page=10`,
-            `https://www.goodreads.com/user/${userId}/books.rss`
+            `https://www.goodreads.com/user/${userId}/books.rss`,
+            `https://www.goodreads.com/review/list_rss/${userId}?shelf=to-read&per_page=10`,
+            `https://www.goodreads.com/review/list_rss/${userId}?shelf=recently-read&per_page=10`
         ];
         
         let activities = [];
@@ -90,28 +92,28 @@ function getFallbackData() {
             status: "قراءة",
             title: "تحقق من ملفي الشخصي في جود ريدز",
             image: "https://images-na.ssl-images-amazon.com/images/I/51ZSpMl1-LL._SX331_BO1,204,203,200_.jpg",
-            time: "حديث",
-            link: "https://www.goodreads.com/user/show/187863776"
-        },
-        {
-            status: "قراءة",
-            title: "Goodreads Profile",
-            image: "https://images-na.ssl-images-amazon.com/images/I/51ZSpMl1-LL._SX331_BO1,204,203,200_.jpg",
-            time: "حديث",
+            time: "اليوم",
             link: "https://www.goodreads.com/user/show/187863776"
         },
         {
             status: "مقروء",
-            title: "Sample Book Title",
-            image: "https://images-na.ssl-images-amazon.com/images/I/51ZSpMl1-LL._SX331_BO1,204,203,200_.jpg",
-            time: "منذ أسبوع",
+            title: "Goodreads Profile",
+            image: "https://images-na.ssl-images-amazon.com/images/I/41d1gVUK1yL._SX331_BO1,204,203,200_.jpg",
+            time: "أمس",
             link: "https://www.goodreads.com/user/show/187863776"
         },
         {
             status: "أريد القراءة",
-            title: "Another Book Title",
-            image: "https://images-na.ssl-images-amazon.com/images/I/51ZSpMl1-LL._SX331_BO1,204,203,200_.jpg",
-            time: "منذ شهر",
+            title: "زيارة الملف الشخصي",
+            image: "https://images-na.ssl-images-amazon.com/images/I/51W1r7OoqJL._SX331_BO1,204,203,200_.jpg",
+            time: "منذ 3 أيام",
+            link: "https://www.goodreads.com/user/show/187863776"
+        },
+        {
+            status: "مراجع",
+            title: "Goodreads Activity",
+            image: "https://images-na.ssl-images-amazon.com/images/I/41yJ75gpV-L._SX331_BO1,204,203,200_.jpg",
+            time: "منذ أسبوع",
             link: "https://www.goodreads.com/user/show/187863776"
         }
     ];
@@ -168,21 +170,58 @@ function parseGoodreadsRSS(rssText) {
                 link = linkMatch[1].trim();
             }
             
-            // Extract image from description
+            // Extract image from description - try multiple patterns
             let imageUrl = '';
-            const imgMatch = description.match(/<img[^>]+src="([^"]+)"/);
-            if (imgMatch) {
-                imageUrl = imgMatch[1];
+            
+            // Try different image patterns
+            const imgPatterns = [
+                /<img[^>]+src="([^"]+)"/,
+                /<img[^>]+src='([^']+)'/,
+                /src="([^"]*book[^"]*\.(?:jpg|jpeg|png|gif|webp)[^"]*)"/i,
+                /src="([^"]*cover[^"]*\.(?:jpg|jpeg|png|gif|webp)[^"]*)"/i,
+                /src="([^"]*\.(?:jpg|jpeg|png|gif|webp)[^"]*)"/i
+            ];
+            
+            for (const pattern of imgPatterns) {
+                const imgMatch = description.match(pattern);
+                if (imgMatch && imgMatch[1]) {
+                    imageUrl = imgMatch[1];
+                    // Clean up the URL
+                    imageUrl = imageUrl.replace(/&amp;/g, '&');
+                    break;
+                }
             }
             
-            // Extract date
+            // If no image found, try to extract from title or use a default
+            if (!imageUrl) {
+                // Try to find book cover URL in the description
+                const bookCoverMatch = description.match(/https:\/\/[^"'\s]+\.(?:jpg|jpeg|png|gif|webp)/i);
+                if (bookCoverMatch) {
+                    imageUrl = bookCoverMatch[0];
+                } else {
+                    // Use a default book cover
+                    imageUrl = 'https://images-na.ssl-images-amazon.com/images/I/51ZSpMl1-LL._SX331_BO1,204,203,200_.jpg';
+                }
+            }
+            
+            // Extract date - try multiple date fields
             let pubDate = '';
-            const dateMatch = itemContent.match(/<pubDate>(.*?)<\/pubDate>/);
-            if (dateMatch) {
-                pubDate = dateMatch[1].trim();
+            const datePatterns = [
+                /<pubDate>(.*?)<\/pubDate>/,
+                /<dc:date>(.*?)<\/dc:date>/,
+                /<updated>(.*?)<\/updated>/,
+                /<lastBuildDate>(.*?)<\/lastBuildDate>/
+            ];
+            
+            for (const pattern of datePatterns) {
+                const dateMatch = itemContent.match(pattern);
+                if (dateMatch && dateMatch[1]) {
+                    pubDate = dateMatch[1].trim();
+                    break;
+                }
             }
             
-            // Format date
+            // Format date with better Arabic formatting
             let formattedDate = 'حديث';
             if (pubDate) {
                 try {
@@ -191,15 +230,21 @@ function parseGoodreadsRSS(rssText) {
                     const diffTime = Math.abs(now - date);
                     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
                     
-                    if (diffDays === 1) {
+                    if (diffDays === 0) {
+                        formattedDate = 'اليوم';
+                    } else if (diffDays === 1) {
                         formattedDate = 'أمس';
                     } else if (diffDays < 7) {
                         formattedDate = `منذ ${diffDays} أيام`;
                     } else if (diffDays < 30) {
                         const weeks = Math.floor(diffDays / 7);
                         formattedDate = weeks === 1 ? 'منذ أسبوع' : `منذ ${weeks} أسابيع`;
+                    } else if (diffDays < 365) {
+                        const months = Math.floor(diffDays / 30);
+                        formattedDate = months === 1 ? 'منذ شهر' : `منذ ${months} أشهر`;
                     } else {
                         formattedDate = date.toLocaleDateString('ar-SA', { 
+                            year: 'numeric',
                             month: 'short', 
                             day: 'numeric' 
                         });
@@ -210,7 +255,7 @@ function parseGoodreadsRSS(rssText) {
                 }
             }
             
-            // Clean up title (remove HTML tags)
+            // Clean up title (remove HTML tags and extra whitespace)
             const cleanTitle = title.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
             
             // Determine status based on title or description
