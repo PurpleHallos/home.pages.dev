@@ -287,10 +287,15 @@ main {
     text-align: right;
 }
 
-/* Email widget specific styling */
+/* Email widget specific styling - override RTL for this widget */
+.widget a[href^="mailto:"] .content {
+    flex-direction: row !important;
+    align-items: center;
+}
+
 .email-icon {
-    margin-left: 15px;
-    margin-right: 0;
+    margin-right: 15px;
+    margin-left: 0;
 }
 
 .email-text {
