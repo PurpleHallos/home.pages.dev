@@ -287,6 +287,11 @@ main {
     text-align: right;
 }
 
+/* Specific spacing for email widget */
+.widget a[href^="mailto:"] .meta {
+    margin-left: 40px !important;
+}
+
 @media (width < 880px) {
     .widget[style*='--m-'] {
         --c: min(var(--m-columns, 2), var(--template-columns));
