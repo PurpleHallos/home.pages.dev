@@ -177,54 +177,63 @@ function parseGoodreadsRSS(rssText) {
                 link = linkMatch[1].trim();
             }
             
-            // Extract image from description - try multiple patterns
+            // Extract book cover image - prioritize dedicated image URL fields
             let imageUrl = '';
             
-            // Enhanced image extraction for book covers
-            const imgPatterns = [
-                // Goodreads specific patterns
-                /<img[^>]+src="([^"]*images-na\.ssl-images-amazon\.com[^"]*)"[^>]*>/,
-                /<img[^>]+src="([^"]*goodreads\.com[^"]*)"[^>]*>/,
-                /<img[^>]+src="([^"]*\.jpg[^"]*)"[^>]*>/,
-                /<img[^>]+src="([^"]*\.png[^"]*)"[^>]*>/,
-                /<img[^>]+src="([^"]*\.jpeg[^"]*)"[^>]*>/,
-                /<img[^>]+src="([^"]*\.gif[^"]*)"[^>]*>/,
-                /<img[^>]+src="([^"]*\.webp[^"]*)"[^>]*>/,
-                // Alternative patterns
-                /src="([^"]*images-na\.ssl-images-amazon\.com[^"]*)"/,
-                /src="([^"]*goodreads\.com[^"]*)"/,
-                /src="([^"]*\.jpg[^"]*)"/,
-                /src="([^"]*\.png[^"]*)"/,
-                /src="([^"]*\.jpeg[^"]*)"/,
-                /src="([^"]*\.gif[^"]*)"/,
-                /src="([^"]*\.webp[^"]*)"/
+            // First, try to extract from dedicated Goodreads image URL fields
+            const imageFieldPatterns = [
+                /<book_large_image_url><!\[CDATA\[(.*?)\]\]><\/book_large_image_url>/,
+                /<book_medium_image_url><!\[CDATA\[(.*?)\]\]><\/book_medium_image_url>/,
+                /<book_image_url><!\[CDATA\[(.*?)\]\]><\/book_image_url>/,
+                /<book_small_image_url><!\[CDATA\[(.*?)\]\]><\/book_small_image_url>/,
+                // Alternative patterns without CDATA
+                /<book_large_image_url>(.*?)<\/book_large_image_url>/,
+                /<book_medium_image_url>(.*?)<\/book_medium_image_url>/,
+                /<book_image_url>(.*?)<\/book_image_url>/,
+                /<book_small_image_url>(.*?)<\/book_small_image_url>/
             ];
             
-            for (const pattern of imgPatterns) {
-                const imgMatch = description.match(pattern);
+            for (const pattern of imageFieldPatterns) {
+                const imgMatch = itemContent.match(pattern);
                 if (imgMatch && imgMatch[1]) {
-                    imageUrl = imgMatch[1];
+                    imageUrl = imgMatch[1].trim();
                     // Clean up HTML entities
                     imageUrl = imageUrl.replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>');
-                    console.log('Found book cover:', imageUrl);
+                    console.log('Found book cover from dedicated field:', imageUrl);
                     break;
                 }
             }
             
-            // If no image found, try broader patterns
+            // If no dedicated field found, try to extract from description
             if (!imageUrl) {
-                // Try to find any image URL in the description
-                const urlPatterns = [
-                    /https:\/\/[^"'\s]+\.(?:jpg|jpeg|png|gif|webp)/i,
-                    /https:\/\/images-na\.ssl-images-amazon\.com[^"'\s]+/i,
-                    /https:\/\/goodreads\.com[^"'\s]+\.(?:jpg|jpeg|png|gif|webp)/i
+                const imgPatterns = [
+                    // Goodreads specific patterns
+                    /<img[^>]+src="([^"]*i\.gr-assets\.com[^"]*)"[^>]*>/,
+                    /<img[^>]+src="([^"]*images-na\.ssl-images-amazon\.com[^"]*)"[^>]*>/,
+                    /<img[^>]+src="([^"]*goodreads\.com[^"]*)"[^>]*>/,
+                    /<img[^>]+src="([^"]*\.jpg[^"]*)"[^>]*>/,
+                    /<img[^>]+src="([^"]*\.png[^"]*)"[^>]*>/,
+                    /<img[^>]+src="([^"]*\.jpeg[^"]*)"[^>]*>/,
+                    /<img[^>]+src="([^"]*\.gif[^"]*)"[^>]*>/,
+                    /<img[^>]+src="([^"]*\.webp[^"]*)"[^>]*>/,
+                    // Alternative patterns
+                    /src="([^"]*i\.gr-assets\.com[^"]*)"/,
+                    /src="([^"]*images-na\.ssl-images-amazon\.com[^"]*)"/,
+                    /src="([^"]*goodreads\.com[^"]*)"/,
+                    /src="([^"]*\.jpg[^"]*)"/,
+                    /src="([^"]*\.png[^"]*)"/,
+                    /src="([^"]*\.jpeg[^"]*)"/,
+                    /src="([^"]*\.gif[^"]*)"/,
+                    /src="([^"]*\.webp[^"]*)"/
                 ];
                 
-                for (const pattern of urlPatterns) {
-                    const urlMatch = description.match(pattern);
-                    if (urlMatch) {
-                        imageUrl = urlMatch[0];
-                        console.log('Found image URL:', imageUrl);
+                for (const pattern of imgPatterns) {
+                    const imgMatch = description.match(pattern);
+                    if (imgMatch && imgMatch[1]) {
+                        imageUrl = imgMatch[1];
+                        // Clean up HTML entities
+                        imageUrl = imageUrl.replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>');
+                        console.log('Found book cover from description:', imageUrl);
                         break;
                     }
                 }
