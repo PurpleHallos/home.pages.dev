@@ -281,23 +281,21 @@ main {
 
 .widget[style*='--rows: 1;'] .meta {
     margin-top: 0;
-    margin-left: 30px;
-    margin-right: 0;
+    margin-right: 20px;
+    margin-left: 0;
     white-space: nowrap;
     text-align: right;
 }
 
-/* Email widget specific layout - icon above text */
-.widget a[href^="mailto:"] .content {
-    flex-direction: column !important;
-    align-items: flex-end;
-    justify-content: center;
-    text-align: right;
+/* Email widget specific styling */
+.email-icon {
+    margin-left: 15px;
+    margin-right: 0;
 }
 
-.widget a[href^="mailto:"] .meta {
-    margin-left: 0 !important;
-    margin-top: 15px;
+.email-text {
+    margin-left: 0;
+    margin-right: 0;
     text-align: right;
 }
 
