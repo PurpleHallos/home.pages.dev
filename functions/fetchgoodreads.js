@@ -168,6 +168,8 @@ function parseGoodreadsRSS(rssText) {
                 }
             }
             
+            console.log(`Item ${i + 1} description preview:`, description.substring(0, 200));
+            
             // Extract link
             let link = '';
             const linkMatch = itemContent.match(/<link>(.*?)<\/link>/);
@@ -178,35 +180,66 @@ function parseGoodreadsRSS(rssText) {
             // Extract image from description - try multiple patterns
             let imageUrl = '';
             
-            // Try different image patterns
+            // Enhanced image extraction for book covers
             const imgPatterns = [
-                /<img[^>]+src="([^"]+)"/,
-                /<img[^>]+src='([^']+)'/,
-                /src="([^"]*book[^"]*\.(?:jpg|jpeg|png|gif|webp)[^"]*)"/i,
-                /src="([^"]*cover[^"]*\.(?:jpg|jpeg|png|gif|webp)[^"]*)"/i,
-                /src="([^"]*\.(?:jpg|jpeg|png|gif|webp)[^"]*)"/i
+                // Goodreads specific patterns
+                /<img[^>]+src="([^"]*images-na\.ssl-images-amazon\.com[^"]*)"[^>]*>/,
+                /<img[^>]+src="([^"]*goodreads\.com[^"]*)"[^>]*>/,
+                /<img[^>]+src="([^"]*\.jpg[^"]*)"[^>]*>/,
+                /<img[^>]+src="([^"]*\.png[^"]*)"[^>]*>/,
+                /<img[^>]+src="([^"]*\.jpeg[^"]*)"[^>]*>/,
+                /<img[^>]+src="([^"]*\.gif[^"]*)"[^>]*>/,
+                /<img[^>]+src="([^"]*\.webp[^"]*)"[^>]*>/,
+                // Alternative patterns
+                /src="([^"]*images-na\.ssl-images-amazon\.com[^"]*)"/,
+                /src="([^"]*goodreads\.com[^"]*)"/,
+                /src="([^"]*\.jpg[^"]*)"/,
+                /src="([^"]*\.png[^"]*)"/,
+                /src="([^"]*\.jpeg[^"]*)"/,
+                /src="([^"]*\.gif[^"]*)"/,
+                /src="([^"]*\.webp[^"]*)"/
             ];
             
             for (const pattern of imgPatterns) {
                 const imgMatch = description.match(pattern);
                 if (imgMatch && imgMatch[1]) {
                     imageUrl = imgMatch[1];
-                    // Clean up the URL
-                    imageUrl = imageUrl.replace(/&amp;/g, '&');
+                    // Clean up HTML entities
+                    imageUrl = imageUrl.replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>');
+                    console.log('Found book cover:', imageUrl);
                     break;
                 }
             }
             
-            // If no image found, try to extract from title or use a default
+            // If no image found, try broader patterns
             if (!imageUrl) {
-                // Try to find book cover URL in the description
-                const bookCoverMatch = description.match(/https:\/\/[^"'\s]+\.(?:jpg|jpeg|png|gif|webp)/i);
-                if (bookCoverMatch) {
-                    imageUrl = bookCoverMatch[0];
-                } else {
-                    // Use a default book cover
-                    imageUrl = 'https://images-na.ssl-images-amazon.com/images/I/51ZSpMl1-LL._SX331_BO1,204,203,200_.jpg';
+                // Try to find any image URL in the description
+                const urlPatterns = [
+                    /https:\/\/[^"'\s]+\.(?:jpg|jpeg|png|gif|webp)/i,
+                    /https:\/\/images-na\.ssl-images-amazon\.com[^"'\s]+/i,
+                    /https:\/\/goodreads\.com[^"'\s]+\.(?:jpg|jpeg|png|gif|webp)/i
+                ];
+                
+                for (const pattern of urlPatterns) {
+                    const urlMatch = description.match(pattern);
+                    if (urlMatch) {
+                        imageUrl = urlMatch[0];
+                        console.log('Found image URL:', imageUrl);
+                        break;
+                    }
                 }
+            }
+            
+            // If still no image, use varied default covers
+            if (!imageUrl) {
+                const defaultCovers = [
+                    'https://images-na.ssl-images-amazon.com/images/I/41d1gVUK1yL._SX331_BO1,204,203,200_.jpg',
+                    'https://images-na.ssl-images-amazon.com/images/I/51W1r7OoqJL._SX331_BO1,204,203,200_.jpg',
+                    'https://images-na.ssl-images-amazon.com/images/I/41yJ75gpV-L._SX331_BO1,204,203,200_.jpg',
+                    'https://images-na.ssl-images-amazon.com/images/I/51ZSpMl1-LL._SX331_BO1,204,203,200_.jpg'
+                ];
+                imageUrl = defaultCovers[i % defaultCovers.length];
+                console.log('Using default cover:', imageUrl);
             }
             
             // Extract date - try multiple date fields
