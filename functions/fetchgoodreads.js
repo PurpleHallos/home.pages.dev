@@ -3,58 +3,41 @@ export default {
         try {
             console.log('Fetching Goodreads RSS feed...');
             
-            // Try multiple shelves to get books
-            const shelves = ['currently-reading', 'read', 'want-to-read'];
-            let activities = [];
-            let rssText = '';
+            // Goodreads RSS feed URL (no API key needed)
+            const userId = '187863776'; // Your Goodreads user ID
+            const rssUrl = `https://www.goodreads.com/review/list_rss/${userId}?shelf=currently-reading&per_page=10`;
             
-            for (const shelf of shelves) {
-                console.log(`Trying shelf: ${shelf}`);
-                
-                const rssResponse = await fetch(`https://www.goodreads.com/review/list_rss/187863776?key=ykFaD4-IQ7HvBptnxbocARC6Vq5yeUDawEu7VtxQjkyZbZBP&shelf=${shelf}&per_page=20`, {
-                    headers: {
-                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
-                        'Accept': 'application/rss+xml, application/xml, text/xml, */*',
-                        'Accept-Language': 'en-US,en;q=0.9',
-                        'Cache-Control': 'no-cache'
-                    }
-                });
-                
-                console.log(`RSS response status for ${shelf}:`, rssResponse.status);
-                
-                if (rssResponse.ok) {
-                    rssText = await rssResponse.text();
-                    console.log(`RSS feed fetched for ${shelf}, length:`, rssText.length);
-                    
-                    // Parse the RSS feed to get the latest activities
-                    activities = parseGoodreadsRSS(rssText);
-                    console.log(`Parsed activities count for ${shelf}:`, activities.length);
-                    
-                    if (activities.length > 0) {
-                        console.log(`Found ${activities.length} activities in ${shelf} shelf`);
-                        break;
-                    }
-                } else {
-                    console.log(`Failed to fetch ${shelf} shelf: ${rssResponse.status}`);
+            console.log('Fetching RSS from:', rssUrl);
+            
+            const rssResponse = await fetch(rssUrl, {
+                headers: {
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                    'Accept': 'application/rss+xml, application/xml, text/xml, */*',
+                    'Accept-Language': 'en-US,en;q=0.9',
+                    'Cache-Control': 'no-cache'
                 }
+            });
+            
+            console.log('RSS response status:', rssResponse.status);
+            
+            if (!rssResponse.ok) {
+                throw new Error(`RSS fetch failed with status: ${rssResponse.status}`);
             }
             
+            const rssText = await rssResponse.text();
+            console.log('RSS feed fetched, length:', rssText.length);
+            
+            // Parse the RSS feed
+            const activities = parseGoodreadsRSS(rssText);
+            console.log('Parsed activities count:', activities.length);
+            
             if (activities.length === 0) {
-                console.log('No activities found in any shelf, returning fallback data');
-                const fallbackActivities = [
-                    {
-                        status: "Reading",
-                        title: "Check out my Goodreads profile",
-                        image: "",
-                        time: "Recent",
-                        link: "https://www.goodreads.com/user/show/187863776"
-                    }
-                ];
-                
-                return new Response(JSON.stringify(fallbackActivities), {
+                console.log('No activities found, returning fallback data');
+                return new Response(JSON.stringify(getFallbackData()), {
                     headers: {
                         'Content-Type': 'application/json',
-                        'Access-Control-Allow-Origin': '*'
+                        'Access-Control-Allow-Origin': '*',
+                        'Cache-Control': 'public, max-age=300'
                     }
                 });
             }
@@ -72,25 +55,35 @@ export default {
             console.error('Error stack:', error.stack);
             
             // Return fallback data if fetch fails
-            const fallbackActivities = [
-                {
-                    status: "Reading",
-                    title: "Check out my Goodreads profile",
-                    image: "",
-                    time: "Recent",
-                    link: "https://www.goodreads.com/user/show/187863776"
-                }
-            ];
-            
-            return new Response(JSON.stringify(fallbackActivities), {
+            return new Response(JSON.stringify(getFallbackData()), {
                 headers: {
                     'Content-Type': 'application/json',
-                    'Access-Control-Allow-Origin': '*'
+                    'Access-Control-Allow-Origin': '*',
+                    'Cache-Control': 'public, max-age=60'
                 }
             });
         }
     }
 };
+
+function getFallbackData() {
+    return [
+        {
+            status: "قراءة",
+            title: "تحقق من ملفي الشخصي في جود ريدز",
+            image: "https://images-na.ssl-images-amazon.com/images/I/51ZSpMl1-LL._SX331_BO1,204,203,200_.jpg",
+            time: "حديث",
+            link: "https://www.goodreads.com/user/show/187863776"
+        },
+        {
+            status: "قراءة",
+            title: "Goodreads Profile",
+            image: "https://images-na.ssl-images-amazon.com/images/I/51ZSpMl1-LL._SX331_BO1,204,203,200_.jpg",
+            time: "حديث",
+            link: "https://www.goodreads.com/user/show/187863776"
+        }
+    ];
+}
 
 function parseGoodreadsRSS(rssText) {
     const activities = [];
@@ -98,148 +91,67 @@ function parseGoodreadsRSS(rssText) {
     try {
         console.log('RSS feed content preview:', rssText.substring(0, 500));
         
-        // Try multiple patterns to extract items
-        let itemMatches = rssText.match(/<item>([\s\S]*?)<\/item>/g);
-        
-        if (!itemMatches || itemMatches.length === 0) {
-            // Try alternative pattern
-            itemMatches = rssText.match(/<entry>([\s\S]*?)<\/entry>/g);
-        }
+        // Parse XML using regex (simple approach for RSS)
+        const itemMatches = rssText.match(/<item>([\s\S]*?)<\/item>/g);
         
         if (!itemMatches || itemMatches.length === 0) {
             console.log('No items found in RSS feed');
-            console.log('RSS feed structure:', rssText.substring(0, 1000));
             return activities;
         }
         
         console.log(`Found ${itemMatches.length} items in RSS feed`);
         
-        // Process up to 4 items (activities)
+        // Process up to 4 items
         for (let i = 0; i < Math.min(4, itemMatches.length); i++) {
             const itemContent = itemMatches[i];
-            console.log(`Processing item ${i + 1}:`, itemContent.substring(0, 200));
             
-            // Try multiple title patterns
+            // Extract title
             let title = 'Book Activity';
-            const titlePatterns = [
-                /<title><!\[CDATA\[(.*?)\]\]><\/title>/,
-                /<title>(.*?)<\/title>/,
-                /<title[^>]*>(.*?)<\/title>/
-            ];
-            
-            for (const pattern of titlePatterns) {
-                const match = itemContent.match(pattern);
-                if (match) {
-                    title = match[1].trim();
-                    break;
+            const titleMatch = itemContent.match(/<title><!\[CDATA\[(.*?)\]\]><\/title>/);
+            if (titleMatch) {
+                title = titleMatch[1].trim();
+            } else {
+                const altTitleMatch = itemContent.match(/<title>(.*?)<\/title>/);
+                if (altTitleMatch) {
+                    title = altTitleMatch[1].trim();
                 }
             }
             
-            // For review list RSS, extract book title and author from title
-            // Title format is usually "Book Title by Author Name"
-            let bookTitle = title;
-            let author = '';
-            const byMatch = title.match(/^(.+?)\s+by\s+(.+)$/);
-            if (byMatch) {
-                bookTitle = byMatch[1].trim();
-                author = byMatch[2].trim();
-            }
-            
-            // Try multiple description patterns
+            // Extract description for image and additional info
             let description = '';
-            const descPatterns = [
-                /<description><!\[CDATA\[(.*?)\]\]><\/description>/,
-                /<description>(.*?)<\/description>/,
-                /<summary><!\[CDATA\[(.*?)\]\]><\/summary>/,
-                /<summary>(.*?)<\/summary>/
-            ];
-            
-            for (const pattern of descPatterns) {
-                const match = itemContent.match(pattern);
-                if (match) {
-                    description = match[1].trim();
-                    break;
+            const descMatch = itemContent.match(/<description><!\[CDATA\[(.*?)\]\]><\/description>/);
+            if (descMatch) {
+                description = descMatch[1];
+            } else {
+                const altDescMatch = itemContent.match(/<description>(.*?)<\/description>/);
+                if (altDescMatch) {
+                    description = altDescMatch[1];
                 }
             }
             
-            // Try multiple link patterns
+            // Extract link
             let link = '';
-            const linkPatterns = [
-                /<link>(.*?)<\/link>/,
-                /<link[^>]*href="([^"]*)"[^>]*>/,
-                /<link[^>]*>(.*?)<\/link>/
-            ];
-            
-            for (const pattern of linkPatterns) {
-                const match = itemContent.match(pattern);
-                if (match) {
-                    link = match[1].trim();
-                    break;
-                }
+            const linkMatch = itemContent.match(/<link>(.*?)<\/link>/);
+            if (linkMatch) {
+                link = linkMatch[1].trim();
             }
             
-            // Try multiple date patterns
-            let pubDate = '';
-            const datePatterns = [
-                /<pubDate>(.*?)<\/pubDate>/,
-                /<published>(.*?)<\/published>/,
-                /<updated>(.*?)<\/updated>/
-            ];
-            
-            for (const pattern of datePatterns) {
-                const match = itemContent.match(pattern);
-                if (match) {
-                    pubDate = match[1].trim();
-                    break;
-                }
-            }
-            
-            // Extract image URL from description
+            // Extract image from description
             let imageUrl = '';
-            const imgPatterns = [
-                /<img[^>]+src="([^"]+)"/,
-                /<img[^>]+src='([^']+)'/,
-                /src="([^"]*\.(jpg|jpeg|png|gif|webp)[^"]*)"/i
-            ];
-            
-            for (const pattern of imgPatterns) {
-                const match = description.match(pattern);
-                if (match) {
-                    imageUrl = match[1];
-                    break;
-                }
+            const imgMatch = description.match(/<img[^>]+src="([^"]+)"/);
+            if (imgMatch) {
+                imageUrl = imgMatch[1];
             }
             
-            // If no image found in description, try to extract from title or other fields
-            if (!imageUrl) {
-                const allContent = itemContent;
-                for (const pattern of imgPatterns) {
-                    const match = allContent.match(pattern);
-                    if (match) {
-                        imageUrl = match[1];
-                        break;
-                    }
-                }
-            }
-            
-            // For review list RSS, determine status from shelf or description
-            let status = "Read";
-            const titleLower = title.toLowerCase();
-            const descLower = description.toLowerCase();
-            
-            // Check if it's from a specific shelf
-            if (descLower.includes('currently-reading') || titleLower.includes('currently reading')) {
-                status = "Reading";
-            } else if (descLower.includes('want-to-read') || titleLower.includes('want to read')) {
-                status = "Want to Read";
-            } else if (descLower.includes('read') || titleLower.includes('read')) {
-                status = "Read";
-            } else if (descLower.includes('reviewed') || titleLower.includes('reviewed')) {
-                status = "Reviewed";
+            // Extract date
+            let pubDate = '';
+            const dateMatch = itemContent.match(/<pubDate>(.*?)<\/pubDate>/);
+            if (dateMatch) {
+                pubDate = dateMatch[1].trim();
             }
             
             // Format date
-            let formattedDate = 'Recent';
+            let formattedDate = 'حديث';
             if (pubDate) {
                 try {
                     const date = new Date(pubDate);
@@ -248,37 +160,48 @@ function parseGoodreadsRSS(rssText) {
                     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
                     
                     if (diffDays === 1) {
-                        formattedDate = 'Yesterday';
+                        formattedDate = 'أمس';
                     } else if (diffDays < 7) {
-                        formattedDate = `${diffDays} days ago`;
+                        formattedDate = `منذ ${diffDays} أيام`;
                     } else if (diffDays < 30) {
                         const weeks = Math.floor(diffDays / 7);
-                        formattedDate = weeks === 1 ? '1 week ago' : `${weeks} weeks ago`;
+                        formattedDate = weeks === 1 ? 'منذ أسبوع' : `منذ ${weeks} أسابيع`;
                     } else {
-                        formattedDate = date.toLocaleDateString('en-US', { 
+                        formattedDate = date.toLocaleDateString('ar-SA', { 
                             month: 'short', 
                             day: 'numeric' 
                         });
                     }
                 } catch (e) {
                     console.error('Error formatting date:', e);
-                    formattedDate = 'Recent';
+                    formattedDate = 'حديث';
                 }
             }
             
-            // Clean up title (remove HTML tags and extra whitespace)
-            const cleanTitle = bookTitle.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
-            const cleanAuthor = author.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
+            // Clean up title (remove HTML tags)
+            const cleanTitle = title.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
             
-            // Create display title with author
-            const displayTitle = cleanAuthor ? `${cleanTitle} by ${cleanAuthor}` : cleanTitle;
+            // Determine status based on title or description
+            let status = "قراءة";
+            const titleLower = title.toLowerCase();
+            const descLower = description.toLowerCase();
+            
+            if (descLower.includes('currently-reading') || titleLower.includes('currently reading')) {
+                status = "قراءة";
+            } else if (descLower.includes('want-to-read') || titleLower.includes('want to read')) {
+                status = "أريد القراءة";
+            } else if (descLower.includes('read') || titleLower.includes('read')) {
+                status = "مقروء";
+            } else if (descLower.includes('reviewed') || titleLower.includes('reviewed')) {
+                status = "مراجع";
+            }
             
             const activity = {
                 status: status,
-                title: displayTitle,
+                title: cleanTitle,
                 image: imageUrl,
                 time: formattedDate,
-                link: link
+                link: link || 'https://www.goodreads.com/user/show/187863776'
             };
             
             console.log(`Activity ${i + 1}:`, activity);
